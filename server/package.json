@@ -1,0 +1,26 @@
+{
+  "name": "fabcity-api-server",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Fab City Chat Interface API Server",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "node index.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": [
+    "fabcity",
+    "chat",
+    "api",
+    "n8n"
+  ],
+  "author": "Fab City",
+  "license": "MIT"
+}
