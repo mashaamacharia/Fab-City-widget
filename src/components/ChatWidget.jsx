@@ -15,7 +15,7 @@ const SUGGESTIONS = [
 
 const ChatInterface = () => {
   // API URL for the chat interface
-  const apiUrl = 'http://localhost:3001';
+  const apiUrl = 'https://fab-city-express-1.onrender.com';
   const logoUrl = '/fab-city-logo.png';
 
   console.log('🖼️ Logo URL:', logoUrl);
