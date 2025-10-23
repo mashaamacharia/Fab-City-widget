@@ -1,15 +1,15 @@
 import { motion } from 'framer-motion';
 
-const LoadingIndicator = () => {
-  // Use Fab City brand colors
-  const colors = ['#22c55e', '#3b82f6', '#22c55e'];
+const LoadingIndicator = ({ logoUrl }) => {
+  // Use Fab City brand colors from logo
+  const colors = ['#16A34A', '#1E40AF', '#DC2626']; // Green, Blue, Red from logo
 
   return (
     <div className="flex flex-col items-center justify-center p-4">
       {/* Fab City Logo - Small version while loading */}
       <div className="w-12 h-12 rounded-full overflow-hidden mb-4 shadow-md">
         <img 
-          src="/Fab City logo.png" 
+          src={logoUrl || '/fab-city-logo.png'}
           alt="Fab City Logo" 
           className="w-full h-full object-cover"
         />
@@ -69,21 +69,21 @@ const LoadingIndicator = () => {
         <motion.span
           animate={{ opacity: [0, 1, 0] }}
           transition={{ duration: 1.5, repeat: Infinity, times: [0, 0.5, 1] }}
-          className="text-fabcity-green"
+          className="text-fabcity-accent"
         >
           .
         </motion.span>
         <motion.span
           animate={{ opacity: [0, 1, 0] }}
           transition={{ duration: 1.5, repeat: Infinity, times: [0, 0.5, 1], delay: 0.2 }}
-          className="text-fabcity-blue"
+          className="text-fabcity-primary"
         >
           .
         </motion.span>
         <motion.span
           animate={{ opacity: [0, 1, 0] }}
           transition={{ duration: 1.5, repeat: Infinity, times: [0, 0.5, 1], delay: 0.4 }}
-          className="text-fabcity-green"
+          className="text-fabcity-accent"
         >
           .
         </motion.span>
@@ -118,10 +118,10 @@ const Demo = () => {
         <h3 className="text-lg font-semibold text-gray-800 mb-4 text-center">
           Fab City Assistant
         </h3>
-        <LoadingIndicator />
+        <LoadingIndicator logoUrl="/fab-city-logo.png" />
       </div>
     </div>
   );
 };
 
-export default Demo;
+export default LoadingIndicator;

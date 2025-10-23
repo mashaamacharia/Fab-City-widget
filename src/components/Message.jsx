@@ -9,7 +9,30 @@ const Message = ({ message, onLinkClick }) => {
   const [displayedText, setDisplayedText] = useState('');
   const [isTyping, setIsTyping] = useState(!isUser && !message.isTyped);
 
-  // Simulate typing effect for AI responses
+  // 🔧 Typing behavior configuration
+  const BASE_SPEED = 4;           // Lower = faster typing (e.g., 5 = very fast, 20 = slower)
+  const RANDOM_VARIATION = 4;     // Random delay variation for natural typing
+  const MIN_DELAY = 2;            // Minimum delay cap
+
+  // 🧠 Adaptive delay: slows down for longer messages
+  const getAdaptiveDelay = (char, textLength) => {
+    let delay = BASE_SPEED;
+
+    // Adjust based on message length
+    if (textLength < 50) delay *= 0.5;      // Short = faster
+    else if (textLength > 200) delay *= 0.7; // Long = slower
+
+    // Add natural pauses after punctuation
+    if (/[.,!?]/.test(char)) delay *= 1;
+
+    // Add a bit of randomness to avoid robotic rhythm
+    delay += Math.random() * RANDOM_VARIATION;
+
+    // Ensure delay never drops below MIN_DELAY
+    return Math.max(MIN_DELAY, delay);
+  };
+
+  // 🖋️ Typing simulation effect
   useEffect(() => {
     if (isUser || message.isTyped) {
       setDisplayedText(message.text);
@@ -23,28 +46,25 @@ const Message = ({ message, onLinkClick }) => {
 
     const typeNextCharacter = () => {
       if (currentIndex < message.text.length) {
-        // Handle markdown links specially - type them as a unit
         const remainingText = message.text.slice(currentIndex);
         const linkMatch = remainingText.match(/^\[([^\]]+)\]\(([^)]+)\)/);
-        
+
         if (linkMatch) {
-          // Type the entire link at once
+          // Type markdown link as a single chunk
           currentText += linkMatch[0];
           currentIndex += linkMatch[0].length;
         } else {
-          // Type single character
+          // Type one character
           currentText += message.text[currentIndex];
           currentIndex++;
         }
 
         setDisplayedText(currentText);
-        
-        // Randomize typing speed for natural feel
-        const delay = Math.random() * 20 + 10; // 10-30ms
+
+        const delay = getAdaptiveDelay(message.text[currentIndex - 1], message.text.length);
         setTimeout(typeNextCharacter, delay);
       } else {
         setIsTyping(false);
-        // Mark message as typed in parent component
         if (message.onTypingComplete) {
           message.onTypingComplete(message.id);
         }
@@ -54,7 +74,7 @@ const Message = ({ message, onLinkClick }) => {
     typeNextCharacter();
   }, [message.text, isUser]);
 
-  // Extract links from markdown text
+  // 🔗 Extract links for click tracking (optional)
   const extractLinks = (text) => {
     const linkRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
     const links = [];
@@ -77,8 +97,8 @@ const Message = ({ message, onLinkClick }) => {
       <div
         className={`max-w-[85%] md:max-w-[75%] px-5 py-4 rounded-2xl ${
           isUser
-            ? 'bg-fabcity-yellow text-white shadow-md'
-            : 'bg-gray-100 text-gray-900 border border-gray-200'
+            ? 'bg-fabcity-green text-white shadow-md '
+            : 'bg-gray-100 text-black border border-fabcity-blue/30'
         }`}
       >
         <div className="markdown-content">
@@ -106,6 +126,7 @@ const Message = ({ message, onLinkClick }) => {
           >
             {displayedText}
           </ReactMarkdown>
+
           {isTyping && !isUser && (
             <motion.span
               initial={{ opacity: 0 }}
@@ -115,6 +136,7 @@ const Message = ({ message, onLinkClick }) => {
             />
           )}
         </div>
+
         <div className={`text-xs mt-1 ${isUser ? 'text-white/80' : 'text-gray-400'}`}>
           {new Date(message.timestamp).toLocaleTimeString([], {
             hour: '2-digit',
@@ -127,4 +149,3 @@ const Message = ({ message, onLinkClick }) => {
 };
 
 export default Message;
-

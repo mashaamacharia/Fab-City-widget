@@ -13,10 +13,13 @@ const SUGGESTIONS = [
   "What are the key principles of Fab City?"
 ];
 
-const ChatWidget = ({ config = {} }) => {
-  // Get API URL from config or default to relative path
-  const apiUrl = config.apiUrl || '';
-  const [isOpen, setIsOpen] = useState(false);
+const ChatInterface = () => {
+  // API URL for the chat interface
+  const apiUrl = 'http://localhost:3001';
+  const logoUrl = '/fab-city-logo.png';
+
+  console.log('🖼️ Logo URL:', logoUrl);
+  console.log('🔧 API URL:', apiUrl);
   const [messages, setMessages] = useState([]);
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -30,16 +33,15 @@ const ChatWidget = ({ config = {} }) => {
 
   // Generate session ID and capture domain when component mounts
   useEffect(() => {
-    // Generate a unique session ID (timestamp + random string)
     const newSessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     setSessionId(newSessionId);
-
-    // Capture the domain where the widget is embedded
+    
+    // Capture the domain where the chat interface is accessed
     const currentDomain = window.location.hostname;
     setDomain(currentDomain);
     
-    console.log('🌐 Widget initialized on domain:', currentDomain);
     console.log('🔑 Session ID:', newSessionId);
+    console.log('🌐 Domain:', currentDomain);
   }, []);
 
   // Auto-scroll to latest message
@@ -51,12 +53,10 @@ const ChatWidget = ({ config = {} }) => {
     scrollToBottom();
   }, [messages, isLoading]);
 
-  // Focus input when chat opens
+  // Focus input when component mounts
   useEffect(() => {
-    if (isOpen) {
-      setTimeout(() => inputRef.current?.focus(), 100);
-    }
-  }, [isOpen]);
+    setTimeout(() => inputRef.current?.focus(), 100);
+  }, []);
 
   // Auto-dismiss error after 4 seconds
   useEffect(() => {
@@ -183,26 +183,18 @@ const ChatWidget = ({ config = {} }) => {
 
   return (
     <>
-      {/* Chat Widget */}
-      <div className="fixed inset-0 z-50">
-        <AnimatePresence>
-          {isOpen ? (
-            // Full Page Chat View
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.3 }}
-              className="h-full w-full bg-white flex flex-col"
-            >
+      {/* Full Page Chat Interface */}
+      <div className="h-screen w-full bg-white flex flex-col">
               {/* Header */}
-              <div className="border-b border-gray-200 bg-white sticky top-0 z-10">
+              <div className="relative bg-white sticky top-0 z-10">
+                {/* Green line separator */}
+                <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-fabcity-green"></div>
                 <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-xl overflow-hidden flex items-center justify-center">
                         <img 
-                          src="/Fab City logo.png" 
+                          src={logoUrl}
                           alt="Fab City Logo" 
                           className="w-full h-full object-cover"
                         />
@@ -212,43 +204,6 @@ const ChatWidget = ({ config = {} }) => {
                         <p className="text-sm text-gray-500">Your guide to urban innovation</p>
                       </div>
                     </div>
-                    
-                    {/* Close Button with Constant Glow */}
-                    <motion.button
-                      onClick={() => setIsOpen(false)}
-                      whileHover={{ scale: 1.1 }}
-                      whileTap={{ scale: 0.9 }}
-                      className="relative group"
-                    >
-                      {/* Constant Pulsing Glow effect */}
-                      <motion.div
-                        className="absolute inset-0 bg-gradient-to-r from-fabcity-green to-fabcity-blue rounded-full blur-md"
-                        animate={{
-                          opacity: [0.5, 0.8, 0.5],
-                          scale: [1, 1.1, 1],
-                        }}
-                        transition={{
-                          duration: 2,
-                          repeat: Infinity,
-                          ease: "easeInOut",
-                        }}
-                      />
-                      
-                      {/* Button */}
-                      <div className="relative w-10 h-10 bg-gray-100 hover:bg-gradient-to-r hover:from-fabcity-green hover:to-fabcity-blue rounded-full flex items-center justify-center transition-all duration-300 group-hover:shadow-lg">
-                        <svg
-                          className="w-5 h-5 text-gray-600 group-hover:text-white transition-colors duration-300"
-                          fill="none"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                      </div>
-                    </motion.button>
                   </div>
                 </div>
               </div>
@@ -265,7 +220,7 @@ const ChatWidget = ({ config = {} }) => {
                     >
                       <div className="w-24 h-24 rounded-full overflow-hidden flex items-center justify-center mb-6 shadow-xl">
                         <img 
-                          src="/Fab City logo.png" 
+                          src={logoUrl}
                           alt="Fab City Logo" 
                           className="w-full h-full object-cover"
                         />
@@ -303,7 +258,7 @@ const ChatWidget = ({ config = {} }) => {
                       {isLoading && (
                         <div className="flex justify-center my-4">
                           <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-100">
-                            <LoadingIndicator />
+                            <LoadingIndicator logoUrl={logoUrl} />
                           </div>
                         </div>
                       )}
@@ -374,44 +329,14 @@ const ChatWidget = ({ config = {} }) => {
                   </p>
                 </div>
               </div>
-            </motion.div>
-          ) : (
-            // Floating Chat Button
-            <div className="fixed bottom-6 right-6">
-              <motion.button
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => setIsOpen(true)}
-                className="bg-gradient-to-r from-fabcity-green to-fabcity-blue text-white rounded-full p-5 shadow-2xl hover:shadow-3xl transition-shadow relative"
-              >
-                <MessageCircle size={28} />
-                
-                {/* Idle Animation - Pulsing Ring */}
-                <motion.div
-                  className="absolute inset-0 rounded-full border-4 border-fabcity-yellow"
-                  initial={{ scale: 1, opacity: 0.5 }}
-                  animate={{ scale: 1.3, opacity: 0 }}
-                  transition={{
-                    duration: 2,
-                    repeat: Infinity,
-                    repeatDelay: 1,
-                  }}
-                />
-              </motion.button>
-            </div>
-          )}
-        </AnimatePresence>
-      </div>
 
-      {/* Rich Preview Modal */}
-      {previewUrl && (
-        <RichPreviewModal url={previewUrl} onClose={() => setPreviewUrl(null)} />
-      )}
+        {/* Rich Preview Modal */}
+        {previewUrl && (
+          <RichPreviewModal url={previewUrl} onClose={() => setPreviewUrl(null)} />
+        )}
+      </div>
     </>
   );
 };
 
-export default ChatWidget;
-
+export default ChatInterface;

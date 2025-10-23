@@ -1,7 +1,7 @@
-import ChatWidget from './components/ChatWidget';
+import ChatInterface from './components/ChatWidget';
 
 function App() {
-  return <ChatWidget />;
+  return <ChatInterface />;
 }
 
 export default App;

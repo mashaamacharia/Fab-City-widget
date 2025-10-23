@@ -7,9 +7,12 @@ export default {
   theme: {
     extend: {
       colors: {
-        'fabcity-green': '#3EB489',
-        'fabcity-yellow': '#FFA62B',
-        'fabcity-blue': '#1C5D99',
+        'fabcity-blue': '#1E40AF',      // Vibrant blue from logo
+        'fabcity-red': '#DC2626',       // Bright red from logo  
+        'fabcity-green': '#16A34A',     // Bright green from logo
+        'fabcity-primary': '#1E40AF',   // Primary brand color (blue)
+        'fabcity-secondary': '#DC2626', // Secondary brand color (red)
+        'fabcity-accent': '#16A34A',    // Accent brand color (green)
       },
       animation: {
         'bounce-slow': 'bounce 1.4s infinite',
