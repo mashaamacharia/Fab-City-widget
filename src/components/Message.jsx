@@ -10,7 +10,7 @@ const Message = ({ message, onLinkClick }) => {
   const [isTyping, setIsTyping] = useState(!isUser && !message.isTyped);
 
   // 🔧 Typing behavior configuration
-  const BASE_SPEED = 4;           // Lower = faster typing (e.g., 5 = very fast, 20 = slower)
+  const BASE_SPEED = 3;           // Lower = faster typing (e.g., 5 = very fast, 20 = slower)
   const RANDOM_VARIATION = 4;     // Random delay variation for natural typing
   const MIN_DELAY = 2;            // Minimum delay cap
 
@@ -19,8 +19,8 @@ const Message = ({ message, onLinkClick }) => {
     let delay = BASE_SPEED;
 
     // Adjust based on message length
-    if (textLength < 50) delay *= 0.5;      // Short = faster
-    else if (textLength > 200) delay *= 0.7; // Long = slower
+    if (textLength < 50) delay *= 0.3;      // Short = faster
+    else if (textLength > 200) delay *= 0.5; // Long = slower
 
     // Add natural pauses after punctuation
     if (/[.,!?]/.test(char)) delay *= 1;
