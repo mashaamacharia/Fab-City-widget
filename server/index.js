@@ -5,9 +5,16 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 
 // Replace with your actual n8n webhook URL
-const N8N_WEBHOOK_URL = process.env.N8N_WEBHOOK_URL || 'https://automations.manymangoes.com.au/webhook/6b51b51f-4928-48fd-b5fd-b39c34f523d1/chat';
+const N8N_WEBHOOK_URL = process.env.N8N_WEBHOOK_URL || 'https://automations.manymangoes.com.au/webhook/0a93fb77-caa4-4365-92e9-69fdcd742d64/chat';
 
-app.use(cors());
+app.use(cors({
+  origin: [
+    'https://fabcity.manymangoes.com.au',
+  ],
+  methods: ['GET', 'POST', 'OPTIONS'],
+  credentials: true,
+}));
+
 app.use(express.json());
 
 // ❌ REMOVED - Static files now served by Render Static Site
@@ -91,6 +98,40 @@ app.get('/', (req, res) => {
     }
   });
 });
+
+// Log chat sessions
+app.post('/api/logs', express.json(), async (req, res) => {
+  try {
+    const payload = req.body;
+    console.log('🧾 Received chat log from client:', {
+      sessionId: payload.sessionId,
+      totalMessages: payload.totalMessages,
+      domain: payload.domain,
+    });
+
+    // Forward to n8n webhook
+    const n8nLogWebhook = 'https://automations.manymangoes.com.au/webhook/cfb922b5-3f55-4ccf-94c2-6b83e10d37b9';
+    const response = await fetch(n8nLogWebhook, {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json', 
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      console.error(`⚠️ n8n log webhook responded with ${response.status}`);
+      return res.status(502).json({ error: 'Failed to forward log to n8n' });
+    }
+
+    console.log('✅ Chat log successfully forwarded to n8n.');
+    res.status(204).end(); // no content required for sendBeacon
+  } catch (err) {
+    console.error('❌ Error forwarding log to n8n:', err);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
 
 // Health check endpoint (useful for monitoring)
 app.get('/health', (req, res) => {

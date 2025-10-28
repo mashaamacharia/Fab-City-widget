@@ -16,6 +16,8 @@ const SUGGESTIONS = [
 const ChatInterface = () => {
   // API URL for the chat interface
   const apiUrl = 'https://fab-city-express-1.onrender.com';
+  // const apiUrl = 'http://localhost:3001';
+
   const logoUrl = '/fab-city-logo.png';
 
   console.log('🖼️ Logo URL:', logoUrl);
@@ -31,6 +33,7 @@ const ChatInterface = () => {
   const inputRef = useRef(null);
   const errorTimeoutRef = useRef(null);
 
+
   // Generate session ID and capture domain when component mounts
   useEffect(() => {
     const newSessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
@@ -43,6 +46,63 @@ const ChatInterface = () => {
     console.log('🔑 Session ID:', newSessionId);
     console.log('🌐 Domain:', currentDomain);
   }, []);
+
+  const latestMessagesRef = useRef([]);
+
+  // Keep ref updated with current messages
+  useEffect(() => {
+    latestMessagesRef.current = messages;
+  }, [messages]);
+
+  // Handle unload once (always reads latest messages)
+  useEffect(() => {
+    if (!sessionId || !domain) {
+      console.log('no session id');
+      return;
+    }
+
+    console.log('fired');
+
+    const sendChatLog = () => {
+      const latestMessages = latestMessagesRef.current;
+      if (!latestMessages || latestMessages.length === 0) return;
+
+      // ✅ Transform into turn-based format
+      const formattedConversation = latestMessages
+      .map(msg => `**${msg.sender === "user" ? "User" : "AI"}**: ${msg.text}`)
+      .join("\n");
+
+      const payload = {
+        sessionId,
+        domain,
+        totalMessages: latestMessages.length,
+        conversation: formattedConversation,
+        timestamp: new Date().toISOString(),
+      };
+
+      try {
+        const blob = new Blob([JSON.stringify(payload)], { type: "application/json" });
+        const ok = navigator.sendBeacon(`${apiUrl}/api/logs`, blob);
+        console.log("📡 Beacon status:", ok, payload);
+      } catch (err) {
+        console.error("Failed to send unload beacon:", err);
+      }
+    };
+
+
+    // when tab closes or reloads
+    window.addEventListener("beforeunload", sendChatLog);
+    // when tab visibility changes (e.g., reload, navigate away)
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "hidden") sendChatLog();
+    });
+
+    return () => {
+      window.removeEventListener("beforeunload", sendChatLog);
+      document.removeEventListener("visibilitychange", sendChatLog);
+    };
+  }, [sessionId, domain]);
+
 
   // Auto-scroll to latest message
   const scrollToBottom = () => {
