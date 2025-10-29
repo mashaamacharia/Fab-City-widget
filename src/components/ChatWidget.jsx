@@ -40,8 +40,8 @@ const ChatInterface = () => {
     setSessionId(newSessionId);
     const currentDomain = window.location.hostname;
     setDomain(currentDomain);
-    console.log('🆔 Session ID:', newSessionId);
-    console.log('🌐 Domain:', currentDomain);
+    //console.log('🆔 Session ID:', newSessionId);
+    //console.log('🌐 Domain:', currentDomain);
   }, []);
 
   // Request geolocation on mount
@@ -66,7 +66,7 @@ const ChatInterface = () => {
         setLocation(userLocation);
         setLocationPermission('granted');
         setShowLocationBanner(false);
-        console.log('📍 Location captured:', userLocation);
+        //console.log('📍 Location captured:', userLocation);
       },
       (err) => {
         console.warn('Location access denied:', err.message);
@@ -101,11 +101,11 @@ const ChatInterface = () => {
   // Handle unload once (always reads latest messages)
   useEffect(() => {
     if (!sessionId || !domain) {
-      console.log('no session id');
+      //console.log('no session id');
       return;
     }
 
-    console.log('fired');
+    //console.log('fired');
 
     const sendChatLog = () => {
       const latestMessages = latestMessagesRef.current;
@@ -127,7 +127,7 @@ const ChatInterface = () => {
       try {
         const blob = new Blob([JSON.stringify(payload)], { type: "application/json" });
         const ok = navigator.sendBeacon(`${apiUrl}/api/logs`, blob);
-        console.log("📡 Beacon status:", ok, payload);
+        //console.log("📡 Beacon status:", ok, payload);
       } catch (err) {
         console.error("Failed to send unload beacon:", err);
       }
@@ -209,12 +209,12 @@ const ChatInterface = () => {
 
       if (location) {
         requestBody.location = location;
-        console.log('📍 Sending location to backend:', location);
+        //console.log('📍 Sending location to backend:', location);
       } else {
-        console.log('⚠️ No location available to send');
+        //console.log('⚠️ No location available to send');
       }
 
-      console.log('📤 Full request body:', requestBody);
+      //console.log('📤 Full request body:', requestBody);
 
       const response = await fetch(`${apiUrl}/api/chat`, {
         method: 'POST',
@@ -229,7 +229,7 @@ const ChatInterface = () => {
       }
 
       const data = await response.json();
-      console.log('📥 Received from backend:', data);
+      //console.log('📥 Received from backend:', data);
 
       let responseText = '';
       if (Array.isArray(data) && data.length > 0) {

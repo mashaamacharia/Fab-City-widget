@@ -19,7 +19,7 @@ app.use(express.json());
 
 app.post('/api/chat', async (req, res) => {
   try {
-    console.log('📥 Received request body:', JSON.stringify(req.body, null, 2));
+    //console.log('📥 Received request body:', JSON.stringify(req.body, null, 2));
     
     const { message, sessionId, domain, location } = req.body;
 
@@ -41,7 +41,7 @@ app.post('/api/chat', async (req, res) => {
       ? `Location: (${location.latitude.toFixed(4)}, ${location.longitude.toFixed(4)}, accuracy: ${location.accuracy}m)`
       : 'Location: ❌ Not provided';
     
-    console.log(`📤 Sending to n8n - Domain: ${domain}, Session: ${sessionId}, ${locationInfo}, Message: "${message.substring(0, 50)}..."`);
+    //console.log(`📤 Sending to n8n - Domain: ${domain}, Session: ${sessionId}, ${locationInfo}, Message: "${message.substring(0, 50)}..."`);
 
     // Prepare payload for n8n
     const payload = {
@@ -57,12 +57,12 @@ app.post('/api/chat', async (req, res) => {
         longitude: location.longitude,
         accuracy: location.accuracy || null
       };
-      console.log('✅ Location added to n8n payload:', payload.location);
+      //console.log('✅ Location added to n8n payload:', payload.location);
     } else {
-      console.log('⚠️ Location not available in request or invalid format');
+      //console.log('⚠️ Location not available in request or invalid format');
     }
     
-    console.log('📦 Full n8n payload:', JSON.stringify(payload, null, 2));
+    //console.log('📦 Full n8n payload:', JSON.stringify(payload, null, 2));
 
     // Forward the data to n8n webhook
     const response = await fetch(N8N_WEBHOOK_URL, {
@@ -78,7 +78,7 @@ app.post('/api/chat', async (req, res) => {
     }
 
     const data = await response.json();
-    console.log(`✅ Received from n8n - Domain: ${domain}, Session: ${sessionId}`);
+    //console.log(`✅ Received from n8n - Domain: ${domain}, Session: ${sessionId}`);
 
     // Return the n8n response to the frontend
     res.json(data);
@@ -139,11 +139,11 @@ app.get('/', (req, res) => {
 app.post('/api/logs', express.json(), async (req, res) => {
   try {
     const payload = req.body;
-    console.log('🧾 Received chat log from client:', {
-      sessionId: payload.sessionId,
-      totalMessages: payload.totalMessages,
-      domain: payload.domain,
-    });
+    // console.log('🧾 Received chat log from client:', {
+    //   sessionId: payload.sessionId,
+    //   totalMessages: payload.totalMessages,
+    //   domain: payload.domain,
+    // });
 
     // Forward to n8n webhook
     const n8nLogWebhook = 'https://automations.manymangoes.com.au/webhook/cfb922b5-3f55-4ccf-94c2-6b83e10d37b9';
@@ -160,7 +160,7 @@ app.post('/api/logs', express.json(), async (req, res) => {
       return res.status(502).json({ error: 'Failed to forward log to n8n' });
     }
 
-    console.log('✅ Chat log successfully forwarded to n8n.');
+    //console.log('✅ Chat log successfully forwarded to n8n.');
     res.status(204).end(); // no content required for sendBeacon
   } catch (err) {
     console.error('❌ Error forwarding log to n8n:', err);
@@ -173,11 +173,11 @@ app.post('/api/logs', express.json(), async (req, res) => {
 app.post('/api/logs', express.json(), async (req, res) => {
   try {
     const payload = req.body;
-    console.log('🧾 Received chat log from client:', {
-      sessionId: payload.sessionId,
-      totalMessages: payload.totalMessages,
-      domain: payload.domain,
-    });
+    // console.log('🧾 Received chat log from client:', {
+    //   sessionId: payload.sessionId,
+    //   totalMessages: payload.totalMessages,
+    //   domain: payload.domain,
+    // });
 
     // Forward to n8n webhook
     const n8nLogWebhook = 'https://automations.manymangoes.com.au/webhook/cfb922b5-3f55-4ccf-94c2-6b83e10d37b9';
@@ -194,7 +194,7 @@ app.post('/api/logs', express.json(), async (req, res) => {
       return res.status(502).json({ error: 'Failed to forward log to n8n' });
     }
 
-    console.log('✅ Chat log successfully forwarded to n8n.');
+    //console.log('✅ Chat log successfully forwarded to n8n.');
     res.status(204).end(); // no content required for sendBeacon
   } catch (err) {
     console.error('❌ Error forwarding log to n8n:', err);
@@ -212,8 +212,8 @@ app.get('/health', (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`🚀 API Server running on port: ${PORT}`);
-  console.log(`🔗 Proxying chat requests to: ${N8N_WEBHOOK_URL}`);
-  console.log(`🌐 Widget hosted at: https://fabcity-widget.onrender.com`);
-  console.log(`📍 Geolocation support: ENABLED`);
+  //console.log(`🚀 API Server running on port: ${PORT}`);
+  //console.log(`🔗 Proxying chat requests to: ${N8N_WEBHOOK_URL}`);
+  //console.log(`🌐 Widget hosted at: https://fabcity-widget.onrender.com`);
+  //console.log(`📍 Geolocation support: ENABLED`);
 });
