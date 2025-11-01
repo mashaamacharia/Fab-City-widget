@@ -1,0 +1,206 @@
+{
+  "name": "fabcity etl",
+  "nodes": [
+    {
+      "parameters": {
+        "jsCode": "const results = [];\n\n// REGEX: Detects if URL contains the literal string \"folder\" (case-insensitive)\nconst folderNameRegex = /folder/i;\n\n// REGEX: Detects a Google Drive file ID pattern\nconst driveFileRegex = /https:\\/\\/drive\\.google\\.com\\/file\\/d\\/([a-zA-Z0-9_-]+)/;\n\n// REGEX: Detects a Google Drive folder pattern\nconst driveFolderRegex = /https:\\/\\/drive\\.google\\.com\\/drive\\/folders\\/([a-zA-Z0-9_-]+)/;\n\n// --- Classification + Normalization Function ---\nconst classifyAndNormalize = (url) => {\n  if (!url) return { url, url_type: 'unknown' };\n\n  // ✅ 1. Handle Google Drive folder\n  if (driveFolderRegex.test(url)) {\n    return {\n      url, // Keep original link\n      url_type: 'folder'\n    };\n  }\n\n  // ✅ 2. Handle Google Drive file\n  const fileMatch = url.match(driveFileRegex);\n  if (fileMatch) {\n    const fileId = fileMatch[1];\n    // Normalize to a direct-download link (keeps behavior consistent)\n    const normalizedUrl = `https://drive.google.com/uc?export=download&id=${fileId}`;\n    return {\n      url: normalizedUrl,\n      url_type: 'file'\n    };\n  }\n\n  // ✅ 3. For all others, fall back to your original logic\n  const url_type = folderNameRegex.test(url) ? 'folder' : 'file';\n  return { url, url_type };\n};\n// ------------------------------------------------\n\nfor (const item of $input.all()) {\n  const resource_url = item.json[\"Resource URL\"];\n  const canonical_file_path = item.json[\"Canonical File Path\"];\n\n  // Apply classification & normalization independently\n  const resourceResult = classifyAndNormalize(resource_url);\n  const canonicalResult = classifyAndNormalize(canonical_file_path);\n\n  // ✅ Maintain full input context\n  results.push({\n    ...item.json,                   // preserve all Airtable record data\n    source_field: \"Resource URL\",   // helpful for downstream tracking\n    ...resourceResult\n  });\n\n  results.push({\n    ...item.json,\n    source_field: \"Canonical File Path\",\n    ...canonicalResult\n  });\n}\n\nreturn results;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2672,
+        -480
+      ],
+      "id": "70a0e06f-bfb3-490b-a6ad-bf142cd5f5b5",
+      "name": "format_url"
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "appP4LlfPgZFhhqdj",
+          "mode": "list",
+          "cachedResultName": "Full Database",
+          "cachedResultUrl": "https://airtable.com/appP4LlfPgZFhhqdj"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblX6b4zFiGhqHvwL",
+          "mode": "list",
+          "cachedResultName": "Submissions",
+          "cachedResultUrl": "https://airtable.com/appP4LlfPgZFhhqdj/tblX6b4zFiGhqHvwL"
+        },
+        "filterByFormula": "{Status}= 'Published'",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        -2896,
+        -480
+      ],
+      "id": "1a0d9214-32b8-4f2b-bca2-86b91e65e512",
+      "name": "Search records",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "twKDZi8wUdKBb3eX",
+          "name": "Airtable Personal Access Token account 3"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -3120,
+        -480
+      ],
+      "id": "4ccea585-ea60-42f1-b130-2764dc6feb75",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "HZyO7xs4mgijZNNi",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/HZyO7xs4mgijZNNi",
+          "cachedResultName": "etl"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "mode": "each",
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        -1872,
+        -464
+      ],
+      "id": "0b38a200-37f7-42cd-9f90-957ce21269d1",
+      "name": "Execute Workflow"
+    },
+    {
+      "parameters": {
+        "jsCode": "// return {\n//     ...$input.first(),\n//     json: {\n//       ...$input.first().json,\n//       url: \"https://centrinno.eu/wp-content/uploads/2021/05/CENTRINNO_BrandGuidelines_EU.pdf\"\n//     }\n//   };\n\nconst output = [];\n\nfor (const item of $input.all()) {\n  const url = item.json?.url;\n  if (url && url.includes('https://www.youtube.com/watch?v=JP-vsEmOgTc&list=PLFPMlpXzrL_znxpsz36JXwBrY7uI-tLiW&index=1')) {\n    output.push(item);\n  }\n}\n\nreturn output[0];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2416,
+        -480
+      ],
+      "id": "40bf9fff-d484-471c-91e0-22b863dc1a0c",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "batchSize": 5,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -2176,
+        -480
+      ],
+      "id": "0895f945-4e6a-4eea-98e2-40746cc43c20",
+      "name": "Loop Over Items"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "format_url": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search records": {
+      "main": [
+        [
+          {
+            "node": "format_url",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Search records",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Execute Workflow",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute Workflow": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "saveDataErrorExecution": "none",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "versionId": "fe58728f-a25e-404e-84eb-f34e00fa37fd",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "b7ff1e69201968833d88d7592a2d50b06ea8540a200afa0538e34cf1a57976ac"
+  },
+  "id": "8al8ZschzdJgYsoQ",
+  "tags": []
+}

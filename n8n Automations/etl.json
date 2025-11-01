@@ -1,0 +1,1075 @@
+{
+  "name": "etl",
+  "nodes": [
+    {
+      "parameters": {
+        "mode": "insert",
+        "qdrantCollection": {
+          "__rl": true,
+          "value": "fabcity_knowledge",
+          "mode": "list",
+          "cachedResultName": "fabcity_knowledge"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreQdrant",
+      "typeVersion": 1.3,
+      "position": [
+        2736,
+        640
+      ],
+      "id": "34144ba8-af8d-480b-b4d3-b0f231b6f55c",
+      "name": "Qdrant Vector Store2",
+      "credentials": {
+        "qdrantApi": {
+          "id": "iRmWckjEWNQOGllt",
+          "name": "isaac's"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        2736,
+        1072
+      ],
+      "id": "3bdba384-260f-461d-bd65-f555f839db95",
+      "name": "Embeddings OpenAI2",
+      "credentials": {
+        "openAiApi": {
+          "id": "A5ILSSIWFljDn017",
+          "name": "OpenAi account 9"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonMode": "expressionData",
+        "jsonData": "={{ $json.text }}",
+        "textSplittingMode": "custom",
+        "options": {
+          "metadata": {
+            "metadataValues": [
+              {
+                "name": "source",
+                "value": "={{ $json.url }}"
+              },
+              {
+                "name": "resource_title",
+                "value": "={{ $('subflow_trigger').item.json[\"Resource Title\"] }}"
+              },
+              {
+                "name": "resource_description",
+                "value": "={{ $('subflow_trigger').item.json[\"Resource Description\"] }}"
+              },
+              {
+                "name": "author",
+                "value": "={{ $('subflow_trigger').item.json[\"Author(s)\"] }}"
+              },
+              {
+                "name": "publication_year",
+                "value": "={{ $('subflow_trigger').item.json[\"Publication Year\"] }}"
+              },
+              {
+                "name": "resource_language",
+                "value": "={{ $('subflow_trigger').item.json[\"Resource Language\"] }}"
+              },
+              {
+                "name": "other_language",
+                "value": "={{ $('subflow_trigger').item.json[\"Other Language\"] }}"
+              },
+              {
+                "name": "resource_license",
+                "value": "={{ $('subflow_trigger').item.json[\"Resource License\"] }}"
+              },
+              {
+                "name": "focus_area",
+                "value": "={{ $('subflow_trigger').item.json[\"Focus Area\"] }}"
+              },
+              {
+                "name": "topic",
+                "value": "={{ $('subflow_trigger').item.json[\"Topic\"] || []}}"
+              },
+              {
+                "name": "resource_type",
+                "value": "={{ $('subflow_trigger').item.json[\"Resource Type\"] }}"
+              },
+              {
+                "name": "=your_name",
+                "value": "= {{ $('subflow_trigger').item.json[\"Your Name\"] }}"
+              },
+              {
+                "name": "your_email",
+                "value": "={{ $('subflow_trigger').item.json[\"Your Email\"] }}"
+              },
+              {
+                "name": "your_city_region",
+                "value": "={{ $('subflow_trigger').item.json[\"Your City/Region\"] }}"
+              },
+              {
+                "name": "your_organization",
+                "value": "={{ $('subflow_trigger').item.json[\"Your Organization\"] }}"
+              },
+              {
+                "name": "consent",
+                "value": "={{ $('subflow_trigger').item.json.Consent }}"
+              },
+              {
+                "name": "status",
+                "value": "={{ $('subflow_trigger').item.json.Status }}"
+              },
+              {
+                "name": "full_stack_layer",
+                "value": "={{ $('subflow_trigger').item.json[\"Full Stack Layer\"] }}"
+              },
+              {
+                "name": "fab_city_area",
+                "value": "={{ $('subflow_trigger').item.json[\"Fab City Area\"] }}"
+              },
+              {
+                "name": "eu_project_name",
+                "value": "={{ $('subflow_trigger').item.json[\"EU Project Name\"] }}"
+              },
+              {
+                "name": "reviewer",
+                "value": "={{ $('subflow_trigger').item.json.Reviewer }}"
+              },
+              {
+                "name": "submission_date",
+                "value": "={{ $('subflow_trigger').item.json[\"Submission Date\"] }}"
+              },
+              {
+                "name": "approval_stamp",
+                "value": "={{ $('subflow_trigger').item.json[\"Approval Stamp\"] }}"
+              }
+            ]
+          }
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1.1,
+      "position": [
+        2816,
+        864
+      ],
+      "id": "f331d2f8-cf75-4c0f-af6d-ccaa10a46b0b",
+      "name": "Default Data Loader1"
+    },
+    {
+      "parameters": {
+        "resource": "speech",
+        "operation": "speechToText",
+        "additionalOptions": {},
+        "requestOptions": {}
+      },
+      "type": "@elevenlabs/n8n-nodes-elevenlabs.elevenLabs",
+      "typeVersion": 1,
+      "position": [
+        2240,
+        640
+      ],
+      "id": "ce1f5679-e181-4870-b542-81b6a803b6a4",
+      "name": "Transcribe audio or video",
+      "credentials": {
+        "elevenLabsApi": {
+          "id": "CSQ0EaUMtZCnvIs8",
+          "name": "ElevenLabs account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "85f106d4-ab55-42af-a47c-1b9f1d1de698",
+              "leftValue": "={{ $json.url }}",
+              "rightValue": "youtube.com",
+              "operator": {
+                "type": "string",
+                "operation": "notContains"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        704,
+        432
+      ],
+      "id": "1d3178d2-42e6-46bc-a763-29914853da20",
+      "name": "video_check"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "dd0a670b-c8f6-484a-a8fd-387c2efd2937",
+              "leftValue": "={{ $json.url_type }}",
+              "rightValue": "=folder",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        416,
+        656
+      ],
+      "id": "c5ddc188-e533-4ebd-8984-940a3cbb59bb",
+      "name": "folder_check"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "e29f54a4-eba4-433c-9e12-823dadd7a339",
+              "leftValue": "={{ $binary && Object.keys($binary).length > 0 }}",
+              "rightValue": "={{ ($binary && Object.keys($binary).length > 0).toString() }}",
+              "operator": {
+                "type": "boolean",
+                "operation": "false",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1792,
+        640
+      ],
+      "id": "186b8ab4-0b8f-46c9-b998-db1835af0074",
+      "name": "binary_check"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://faunal-garishly-gaylord.ngrok-free.dev/youtube",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "url",
+              "value": "={{ $json.url }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1072,
+        560
+      ],
+      "id": "469a5b1d-36d4-4fbd-b88c-c7adef2476a5",
+      "name": "yt_dlp_service"
+    },
+    {
+      "parameters": {
+        "jsCode": "const output = [];\n\nfor (const item of $input.all()) {\n  const original = $node[\"subflow_trigger\"].json.url ||{};\n\n  output.push({\n    json: {\n      url: original,\n      ...item.json,\n    },\n    binary: {\n      ...item.binary,\n    },\n  });\n}\n\nreturn output;\n// "
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1472,
+        464
+      ],
+      "id": "6cbcd163-8696-41ee-80c5-69ce3c31c78b",
+      "name": "merge"
+    },
+    {
+      "parameters": {
+        "jsCode": "const output = [];\n\nfor (const item of $input.all()) {\n  const original = $node[\"router\"].json;\n  \n  output.push({\n    json: {\n      ...original,\n      ...item.json,\n    },\n  });\n}\n\nreturn output;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2432,
+        640
+      ],
+      "id": "706ce780-a796-455f-b8b2-522d8c918de6",
+      "name": "merge1"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://text-convertor-v4.onrender.com/extract",
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "parameterType": "formBinaryData",
+              "name": "file",
+              "inputDataFieldName": "=data"
+            },
+            {
+              "name": "url",
+              "value": "={{ $json.url || $json.webViewLink }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2448,
+        848
+      ],
+      "id": "0766ffe3-cdb2-4548-9146-f63c22a72a1e",
+      "name": "pdf_parser_service"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://text-convertor-v4.onrender.com/clean",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{\n  [\n    {\n      \"data\": ($json.data) || ($json.body.html),\n      \"url\": $('subflow_trigger').item.json.url\n    }\n  ]\n}}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2416,
+        464
+      ],
+      "id": "2f096ec4-5074-47d6-9b76-51d0ad20c195",
+      "name": "html_parser_service"
+    },
+    {
+      "parameters": {
+        "chunkOverlap": 150,
+        "options": {
+          "splitCode": "markdown"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.textSplitterRecursiveCharacterTextSplitter",
+      "typeVersion": 1,
+      "position": [
+        2912,
+        1072
+      ],
+      "id": "1766b611-48b5-49c9-8deb-075e4d03c1e5",
+      "name": "Recursive Character Text Splitter"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $binary.data.fileExtension}}",
+                    "rightValue": "mp3",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "ec1e5ddb-fae9-4607-ae1b-91c468dd29ff"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "4e4a7879-e8e3-4b45-a409-039598d7e459",
+                    "leftValue": "={{ $binary.data.fileExtension }}",
+                    "rightValue": "pdf",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        2016,
+        832
+      ],
+      "id": "2c56c8b9-d65e-48b3-b95b-2b373cb57cd4",
+      "name": "router"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.url }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0 (compatible; NodeFetcher/1.0; +https://example.com)"
+            },
+            {
+              "name": "Accept",
+              "value": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+            },
+            {
+              "name": "ngrok-skip-browser-warning",
+              "value": "true"
+            }
+          ]
+        },
+        "options": {
+          "redirect": {
+            "redirect": {}
+          },
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        944,
+        288
+      ],
+      "id": "c143d35b-47d4-45c4-b404-2eb631f43326",
+      "name": "resource_download"
+    },
+    {
+      "parameters": {
+        "url": "https://www.googleapis.com/drive/v3/files",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "q",
+              "value": "={{\n  \"'\" +\n  (\n    ($json.url?.match(/folders\\/([a-zA-Z0-9_-]+)/)?.[1] ||\n     $json.webViewLink?.match(/folders\\/([a-zA-Z0-9_-]+)/)?.[1] || '')\n      .replace(/\\?.*$/, '')\n  ) +\n  \"' in parents\"\n}}\n"
+            },
+            {
+              "name": "key",
+              "value": "AIzaSyC__E3rFoEd9SeH57jdV7rK7K9KEVP7A40"
+            },
+            {
+              "name": "fields",
+              "value": "files(id,name,mimeType,webViewLink,webContentLink)"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        672,
+        880
+      ],
+      "id": "a2917d4e-50ad-4e04-9741-bf7897dc6b44",
+      "name": "list files"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.mimeType === 'application/vnd.google-apps.document' \n    ? 'https://www.googleapis.com/drive/v3/files/' + $json.id + '/export?mimeType=application/pdf' \n    : ($json.webContentLink || $json.webViewLink) }}\n",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "key",
+              "value": "AIzaSyC__E3rFoEd9SeH57jdV7rK7K9KEVP7A40"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {}
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1520,
+        864
+      ],
+      "id": "2c6bb686-b79c-46e6-9ae6-3b24e257cfd2",
+      "name": "download_files"
+    },
+    {
+      "parameters": {
+        "jsCode": "const result = []\nfor (const item of $input.all()) {\n  const files = item.json.files\n  for (const eachfile of files) {\n    result.push(eachfile)  \n  }\n}\n\nreturn result;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        864,
+        880
+      ],
+      "id": "14fcbd0e-9687-4384-b7d4-463280c56b78",
+      "name": "format_output"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "ff426fbe-7f58-46ad-9218-e9204dbae342",
+              "leftValue": "={{ $json.mimeType }}",
+              "rightValue": "application/vnd.google-apps.folder",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1088,
+        880
+      ],
+      "id": "22a00262-5f62-4942-91c1-63208ff67cc5",
+      "name": "recursive_folder_check"
+    },
+    {
+      "parameters": {
+        "jsCode": "const output = [];\n\nfor (const item of $input.all()) {\n  const original = $node[\"recursive_folder_check\"].json;\n  const originalBinary = $node[\"recursive_folder_check\"].binary || {};\n\n  output.push({\n    json: {\n      ...original,\n      ...item.json,\n    },\n    binary: {\n      ...originalBinary,\n      ...item.binary,\n    },\n  });\n}\n\nreturn output;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1312,
+        864
+      ],
+      "id": "1cd347f7-d009-459d-83fb-2490624bc29e",
+      "name": "merge2"
+    },
+    {
+      "parameters": {
+        "resource": "video",
+        "operation": "get",
+        "videoId": "={{ $json.url.split('v=')[1].split('&')[0] }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.youTube",
+      "typeVersion": 1,
+      "position": [
+        2000,
+        304
+      ],
+      "id": "77553433-d383-4216-83bc-878ec2487227",
+      "name": "Get a video",
+      "credentials": {
+        "youTubeOAuth2Api": {
+          "id": "FtT9pQUJc7coccHR",
+          "name": "YouTube account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "audio",
+        "operation": "transcribe",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        2144,
+        96
+      ],
+      "id": "8a3234ec-b5fd-44b4-9ab0-8fb8cb11fd42",
+      "name": "Transcribe a recording",
+      "credentials": {
+        "openAiApi": {
+          "id": "A5ILSSIWFljDn017",
+          "name": "OpenAi account 9"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "f41f7b20-a41b-4668-b690-27674a9a16d3",
+              "leftValue": "={{\n  (\n    $json.statusCode >= 400 ||\n    (\n      $json.headers &&\n      (\n        $json.headers.location ||\n        ($json.headers['content-type'] && $json.headers['content-type'].includes('text/html'))\n      )\n    ) &&\n    (\n      $json.data &&\n      (\n        // structural error clues (Next.js / GitBook style)\n        $json.data.includes('id=\"__next_error__\"') ||\n        $json.data.toLowerCase().includes('meta name=\"robots\" content=\"noindex, nofollow\"') ||\n        // more controlled keyword match: only in <title> or <h1>\n        ($json.data.match(/<(title|h1)[^>]*>(.*?)<\\/\\1>/gi) || [])\n          .some(t => t.toLowerCase().match(/\\b(error|not found|forbidden|unavailable)\\b/))\n      )\n    )\n  )\n}}\n",
+              "rightValue": "true",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1168,
+        288
+      ],
+      "id": "d124122a-0165-4b5c-a389-c80d1c664e36",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://text-convertor-v5.onrender.com/render",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "url",
+              "value": "={{ $('subflow_trigger').item.json.url }}"
+            }
+          ]
+        },
+        "options": {
+          "redirect": {
+            "redirect": {}
+          },
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1504,
+        192
+      ],
+      "id": "dc8c7436-c7a2-479b-9a45-fc13feb8a203",
+      "name": "puppeteer"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://unblenchingly-advised-renea.ngrok-free.dev/transcribe",
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "file"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2352,
+        192
+      ],
+      "id": "346350f9-b86c-4c45-9147-3384f3cd768e",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        192,
+        656
+      ],
+      "id": "1e1084e2-fb6c-40e5-b4df-0eb6f3ceab65",
+      "name": "subflow_trigger"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Embeddings OpenAI2": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Qdrant Vector Store2",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Default Data Loader1": {
+      "ai_document": [
+        [
+          {
+            "node": "Qdrant Vector Store2",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Transcribe audio or video": {
+      "main": [
+        [
+          {
+            "node": "merge1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "video_check": {
+      "main": [
+        [
+          {
+            "node": "resource_download",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "yt_dlp_service",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "folder_check": {
+      "main": [
+        [
+          {
+            "node": "video_check",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "list files",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "binary_check": {
+      "main": [
+        [
+          {
+            "node": "html_parser_service",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "router",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "yt_dlp_service": {
+      "main": [
+        [
+          {
+            "node": "merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "merge": {
+      "main": [
+        [
+          {
+            "node": "binary_check",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "merge1": {
+      "main": [
+        [
+          {
+            "node": "Qdrant Vector Store2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "pdf_parser_service": {
+      "main": [
+        [
+          {
+            "node": "Qdrant Vector Store2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "html_parser_service": {
+      "main": [
+        [
+          {
+            "node": "Qdrant Vector Store2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recursive Character Text Splitter": {
+      "ai_textSplitter": [
+        [
+          {
+            "node": "Default Data Loader1",
+            "type": "ai_textSplitter",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "router": {
+      "main": [
+        [
+          {
+            "node": "Transcribe audio or video",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "pdf_parser_service",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "resource_download": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "list files": {
+      "main": [
+        [
+          {
+            "node": "format_output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "download_files": {
+      "main": [
+        [
+          {
+            "node": "binary_check",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "format_output": {
+      "main": [
+        [
+          {
+            "node": "recursive_folder_check",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "recursive_folder_check": {
+      "main": [
+        [
+          {
+            "node": "merge2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "list files",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "merge2": {
+      "main": [
+        [
+          {
+            "node": "download_files",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Transcribe a recording": {
+      "main": [
+        []
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "puppeteer",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "puppeteer": {
+      "main": [
+        [
+          {
+            "node": "merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        []
+      ]
+    },
+    "subflow_trigger": {
+      "main": [
+        [
+          {
+            "node": "folder_check",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "versionId": "3f6a53c1-591b-452c-9d32-24d5139cf6c5",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "b7ff1e69201968833d88d7592a2d50b06ea8540a200afa0538e34cf1a57976ac"
+  },
+  "id": "HZyO7xs4mgijZNNi",
+  "tags": []
+}

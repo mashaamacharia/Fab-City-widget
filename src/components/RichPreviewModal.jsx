@@ -9,8 +9,11 @@ const RichPreviewModal = ({ url, onClose }) => {
   const [embedFailed, setEmbedFailed] = useState(false);
   const [metadata, setMetadata] = useState(null);
   const [loadingMetadata, setLoadingMetadata] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
+  const [showBanner, setShowBanner] = useState(true);
   const iframeRef = useRef(null);
   const embedTimeoutRef = useRef(null);
+  const bannerTimeoutRef = useRef(null);
 
   // Detect file type from URL
   const detectFileType = useCallback((targetUrl) => {
@@ -133,6 +136,57 @@ const RichPreviewModal = ({ url, onClose }) => {
     }
   }, []);
 
+  // Handle PDF download
+  const handleDownloadPDF = async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (isDownloading) return;
+    
+    setIsDownloading(true);
+    
+    try {
+      // Fetch the PDF as a blob
+      const response = await fetch(url);
+      const blob = await response.blob();
+      
+      // Create a temporary URL for the blob
+      const blobUrl = window.URL.createObjectURL(blob);
+      
+      // Create a temporary anchor element
+      const link = document.createElement('a');
+      link.href = blobUrl;
+      
+      // Extract filename from URL or use default
+      const urlPath = new URL(url).pathname;
+      const filename = urlPath.split('/').pop() || 'document.pdf';
+      link.download = filename.endsWith('.pdf') ? filename : `${filename}.pdf`;
+      
+      // Append to body, click, and remove
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      // Clean up the blob URL after a short delay
+      setTimeout(() => {
+        window.URL.revokeObjectURL(blobUrl);
+      }, 100);
+      
+    } catch (error) {
+      console.error('Download failed:', error);
+      // Fallback: try opening in new tab with download attribute
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'document.pdf';
+      link.target = '_blank';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } finally {
+      setIsDownloading(false);
+    }
+  };
+
   // Fetch website metadata
   const fetchMetadata = useCallback(async (targetUrl) => {
     setLoadingMetadata(true);
@@ -196,6 +250,7 @@ const RichPreviewModal = ({ url, onClose }) => {
     setEmbedFailed(false);
     setLoadingMetadata(false);
     setMetadata(null);
+    setShowBanner(true);
     
     const type = detectFileType(url);
     const processed = processUrl(url, type);
@@ -210,11 +265,19 @@ const RichPreviewModal = ({ url, onClose }) => {
         // If we reach here, iframe might be loading slowly or failing
         // We'll let the iframe error handler take care of it
       }, 5000);
+      
+      // Auto-hide banner after 10 seconds
+      bannerTimeoutRef.current = setTimeout(() => {
+        setShowBanner(false);
+      }, 10000);
     }
     
     return () => {
       if (embedTimeoutRef.current) {
         clearTimeout(embedTimeoutRef.current);
+      }
+      if (bannerTimeoutRef.current) {
+        clearTimeout(bannerTimeoutRef.current);
       }
     };
   }, [url, detectFileType, processUrl]);
@@ -278,98 +341,98 @@ const RichPreviewModal = ({ url, onClose }) => {
   const renderContent = () => {
     // Show rich preview card if embedding failed
     if (embedFailed && fileType === 'web') {
-        return (
+      return (
         <div className="flex-1 flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 p-8 overflow-auto">
-                {loadingMetadata ? (
-                  <div className="flex flex-col items-center">
+          {loadingMetadata ? (
+            <div className="flex flex-col items-center">
               <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-500 border-t-transparent mb-4"></div>
               <p className="text-gray-600 font-medium">Loading preview...</p>
-                  </div>
-                ) : metadata ? (
+            </div>
+          ) : metadata ? (
             <div className="max-w-2xl w-full bg-white rounded-2xl shadow-2xl overflow-hidden">
               {/* Image Header */}
-              <div className="relative bg-gradient-to-br from-fabcity-primary/10 to-fabcity-accent/10 h-72 flex items-center justify-center overflow-hidden">
-                      {metadata.image ? (
-                        <img 
-                          src={metadata.image} 
-                          alt={metadata.title}
-                          className="w-full h-full object-cover"
-                          onError={(e) => {
-                            e.target.style.display = 'none';
+              <div className="relative bg-gradient-to-br from-blue-500/10 to-purple-500/10 h-72 flex items-center justify-center overflow-hidden">
+                {metadata.image ? (
+                  <img 
+                    src={metadata.image} 
+                    alt={metadata.title}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      e.target.style.display = 'none';
                     }}
                   />
                 ) : (
-                  <Globe size={96} className="text-fabcity-primary/30" />
+                  <Globe size={96} className="text-blue-500/30" />
                 )}
-                      <div className="absolute bottom-4 left-4 bg-white rounded-xl p-3 shadow-lg">
-                        <img 
-                          src={metadata.favicon} 
-                          alt="Site icon"
-                          className="w-12 h-12"
-                          onError={(e) => {
+                <div className="absolute bottom-4 left-4 bg-white rounded-xl p-3 shadow-lg">
+                  <img 
+                    src={metadata.favicon} 
+                    alt="Site icon"
+                    className="w-12 h-12"
+                    onError={(e) => {
                       e.target.src = `https://www.google.com/s2/favicons?domain=${metadata.domain}&sz=128`;
-                          }}
-                        />
-                      </div>
-                    </div>
+                    }}
+                  />
+                </div>
+              </div>
 
-                    {/* Content */}
-                    <div className="p-8">
+              {/* Content */}
+              <div className="p-8">
                 <h2 className="text-2xl font-bold text-gray-900 mb-3 leading-tight">
-                            {metadata.title}
-                          </h2>
+                  {metadata.title}
+                </h2>
                 <p className="text-sm text-gray-500 mb-4 flex items-center gap-2">
-                            <Globe size={14} />
+                  <Globe size={14} />
                   {metadata.domain}
-                          </p>
+                </p>
                       
                 {metadata.description && (
                   <p className="text-gray-600 leading-relaxed mb-6">
-                        {metadata.description}
-                      </p>
+                    {metadata.description}
+                  </p>
                 )}
 
                 <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6 flex items-start gap-3">
                   <AlertCircle size={20} className="text-amber-600 mt-0.5 flex-shrink-0" />
-                          <div className="flex-1">
+                  <div className="flex-1">
                     <p className="text-sm text-amber-900">
                       <strong>Cannot embed this website.</strong> The site's security settings prevent preview. Please open in a new tab to view the content.
-                            </p>
-                          </div>
-                        </div>
+                    </p>
+                  </div>
+                </div>
 
-                        <a
-                          href={metadata.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
+                <a
+                  href={metadata.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-4 rounded-xl hover:from-blue-700 hover:to-blue-800 transition-all flex items-center justify-center gap-3 font-semibold shadow-lg hover:shadow-xl"
-                        >
-                          <ExternalLink size={20} />
+                >
+                  <ExternalLink size={20} />
                   Open Website in New Tab
                 </a>
-                    </div>
-                  </div>
-                ) : (
+              </div>
+            </div>
+          ) : (
             <div className="max-w-md text-center bg-white p-8 rounded-2xl shadow-xl">
               <AlertCircle size={72} className="text-gray-400 mb-4 mx-auto" />
               <h3 className="text-xl font-bold text-gray-800 mb-3">
-                      Cannot Display Website
-                    </h3>
-                    <p className="text-gray-600 mb-6">
+                Cannot Display Website
+              </h3>
+              <p className="text-gray-600 mb-6">
                 This website's security settings prevent it from being embedded. Please open it in a new tab to view the content.
-                    </p>
-                    <a
-                      href={url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                className="bg-fabcity-primary text-white px-6 py-3 rounded-lg hover:bg-fabcity-primary/90 transition-colors inline-flex items-center gap-2 font-semibold"
-                    >
-                      <ExternalLink size={18} />
+              </p>
+              <a
+                href={url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors inline-flex items-center gap-2 font-semibold"
+              >
+                <ExternalLink size={18} />
                 Open in New Tab
-                    </a>
-                  </div>
-                )}
-              </div>
+              </a>
+            </div>
+          )}
+        </div>
       );
     }
 
@@ -420,18 +483,18 @@ const RichPreviewModal = ({ url, onClose }) => {
       case 'loading':
       default:
         return (
-              <iframe
+          <iframe
             ref={iframeRef}
-                src={embedUrl}
+            src={embedUrl}
             className="flex-1 w-full border-0"
             title="Content Preview"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
             allowFullScreen
             sandbox="allow-scripts allow-same-origin allow-popups allow-forms allow-presentation allow-top-navigation allow-popups-to-escape-sandbox"
             onLoad={handleIframeLoad}
-                onError={handleIframeError}
-                referrerPolicy="no-referrer-when-downgrade"
-              />
+            onError={handleIframeError}
+            referrerPolicy="no-referrer-when-downgrade"
+          />
         );
     }
   };
@@ -473,7 +536,21 @@ const RichPreviewModal = ({ url, onClose }) => {
               </div>
             </div>
             <div className="flex items-center gap-2 flex-shrink-0">
-              {(fileType === 'pdf' || fileType === 'googledrive' || fileType === 'image' || fileType === 'video') && (
+              {fileType === 'pdf' && (
+                <button
+                  onClick={handleDownloadPDF}
+                  disabled={isDownloading}
+                  className="text-white hover:text-white/80 p-2 rounded-lg hover:bg-white/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  title={isDownloading ? "Downloading..." : "Download PDF"}
+                >
+                  {isDownloading ? (
+                    <div className="animate-spin rounded-full h-[18px] w-[18px] border-2 border-white border-t-transparent"></div>
+                  ) : (
+                    <Download size={18} />
+                  )}
+                </button>
+              )}
+              {(fileType === 'googledrive' || fileType === 'image' || fileType === 'video') && (
                 <a
                   href={url}
                   download
@@ -483,7 +560,7 @@ const RichPreviewModal = ({ url, onClose }) => {
                   <Download size={18} />
                 </a>
               )}
-              {embedFailed && fileType === 'web' && (
+              {fileType === 'web' && (
                 <a
                   href={url}
                   target="_blank"
@@ -501,15 +578,40 @@ const RichPreviewModal = ({ url, onClose }) => {
               >
                 {isFullScreen ? <Minimize2 size={18} /> : <Maximize2 size={18} />}
               </button>
-          <button
-            onClick={onClose}
+              <button
+                onClick={onClose}
                 className="text-white hover:text-white/80 p-2 rounded-lg hover:bg-white/20 transition-colors"
                 title="Close (Esc)"
-          >
+              >
                 <X size={18} />
-          </button>
+              </button>
             </div>
           </div>
+
+          {/* Info Banner for Websites */}
+          {fileType === 'web' && showBanner && (
+            <motion.div
+              initial={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              animate={{ height: showBanner ? 'auto' : 0, opacity: showBanner ? 1 : 0 }}
+              transition={{ duration: 0.4, ease: 'easeInOut' }}
+              className="bg-blue-50 border-b border-blue-200 px-4 py-2.5 flex items-center gap-3 flex-shrink-0 overflow-hidden"
+            >
+              <AlertCircle size={18} className="text-blue-600 flex-shrink-0" />
+              <div className="flex-1 min-w-0">
+                <p className="text-sm text-blue-900">
+                  <strong>Can't see the website?</strong> Some sites prevent embedding. Click the <ExternalLink size={14} className="inline mx-1" /> icon above to open in a new tab.
+                </p>
+              </div>
+              <button
+                onClick={() => setShowBanner(false)}
+                className="text-blue-600 hover:text-blue-800 p-1 rounded hover:bg-blue-100 transition-colors flex-shrink-0"
+                title="Dismiss"
+              >
+                <X size={16} />
+              </button>
+            </motion.div>
+          )}
 
           {/* Content */}
           {renderContent()}

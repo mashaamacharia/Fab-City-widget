@@ -1,0 +1,282 @@
+{
+  "name": "fabcity_log",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "cfb922b5-3f55-4ccf-94c2-6b83e10d37b9",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -336,
+        -16
+      ],
+      "id": "0cbbc669-8d96-423b-adb6-755d29a21103",
+      "name": "Webhook",
+      "webhookId": "cfb922b5-3f55-4ccf-94c2-6b83e10d37b9"
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1ZSFfAwcdXJ68xQ7giYI5HHNNBKtcD2RE2A-xhkagW0E",
+          "mode": "list",
+          "cachedResultName": "fabcity_log",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ZSFfAwcdXJ68xQ7giYI5HHNNBKtcD2RE2A-xhkagW0E/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ZSFfAwcdXJ68xQ7giYI5HHNNBKtcD2RE2A-xhkagW0E/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "sessionId": "={{ $json.body.sessionId }}",
+            "domain": "={{ $json.body.domain }}",
+            "totalMessages": "={{ $json.body.totalMessages }}",
+            "conversation": "={{ $json.body.conversation }}",
+            "timestamp": "={{ $json.body.timestamp }}"
+          },
+          "matchingColumns": [
+            "sessionId"
+          ],
+          "schema": [
+            {
+              "id": "sessionId",
+              "displayName": "sessionId",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "domain",
+              "displayName": "domain",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "totalMessages",
+              "displayName": "totalMessages",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "conversation",
+              "displayName": "conversation",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "timestamp",
+              "displayName": "timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "headers",
+              "displayName": "headers",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "params",
+              "displayName": "params",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "query",
+              "displayName": "query",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "body",
+              "displayName": "body",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "webhookUrl",
+              "displayName": "webhookUrl",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "executionMode",
+              "displayName": "executionMode",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -48,
+        -16
+      ],
+      "id": "bc3a252d-7354-47a1-973b-f31686a44c1d",
+      "name": "Append or update row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "mun3I8VQbASynxZQ",
+          "name": "ndunguisaac"
+        }
+      }
+    }
+  ],
+  "pinData": {
+    "Webhook": [
+      {
+        "json": {
+          "headers": {
+            "host": "automations.manymangoes.com.au",
+            "user-agent": "node",
+            "content-length": "3864",
+            "accept": "*/*",
+            "accept-encoding": "gzip, br",
+            "accept-language": "*",
+            "cdn-loop": "cloudflare; loops=1",
+            "cf-connecting-ip": "197.248.170.191",
+            "cf-ipcountry": "KE",
+            "cf-ray": "995ca8079b2c0372-SEA",
+            "cf-visitor": "{\"scheme\":\"https\"}",
+            "content-type": "application/json",
+            "render-proxy-ttl": "4",
+            "rndr-id": "0ecc1217-7070-40ca",
+            "sec-fetch-mode": "cors",
+            "true-client-ip": "197.248.170.191",
+            "x-forwarded-for": "197.248.170.191, 172.71.147.81",
+            "x-forwarded-proto": "https",
+            "x-request-start": "1761677820342263"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "sessionId": "session_1761677623870_rlbs3y8oh",
+            "domain": "localhost",
+            "totalMessages": 6,
+            "conversation": [
+              {
+                "id": 1761677629784,
+                "text": "What is Fab City and how does it work?",
+                "sender": "user",
+                "timestamp": "2025-10-28T18:53:49.784Z"
+              },
+              {
+                "id": 1761677637139,
+                "text": "Fab City is an innovative initiative aimed at transforming cities into self-sufficient and sustainable ecosystems. It promotes a model where cities can produce their own food, energy, and resources, helping to reduce reliance on external supplies. The main objectives of the Fab City network are to empower local communities, foster collaboration, and encourage sustainable practices.\n\nCities participating in the Fab City initiative utilize digital technologies and community-based approaches to promote local production, encourage creative solutions to urban challenges, and make the best use of local resources. Each member city tailors its strategy and focus areas according to its unique context, but they all share a commitment to fostering innovation and sustainability.\n\nIf you're interested in particular cities, initiatives, or collaboration opportunities within the Fab City network, feel free to ask!",
+                "sender": "ai",
+                "timestamp": "2025-10-28T18:53:57.138Z",
+                "isTyped": true
+              },
+              {
+                "id": 1761677690021,
+                "text": "how many employees does fabcity have",
+                "sender": "user",
+                "timestamp": "2025-10-28T18:54:50.021Z"
+              },
+              {
+                "id": 1761677713255,
+                "text": "I couldn't find specific information about the exact number of employees at Fab City or the Fab City Foundation in the current knowledge base. The available documents mainly focus on the initiatives and goals of the Fab City network rather than detailed organizational structure.\n\nHowever, I can tell you that the Fab City Foundation is supported by a distributed global team working towards promoting and implementing the Fab City agenda. They collaborate with a wide range of individuals and organizations across various fields, including urbanism, design, and technology.\n\nFor more specific inquiries like this, you might consider reaching out directly to the Fab City Foundation at info@fab.city. Would you like to explore something else related to Fab City?",
+                "sender": "ai",
+                "timestamp": "2025-10-28T18:55:13.254Z",
+                "isTyped": true
+              },
+              {
+                "id": 1761677778578,
+                "text": "okay show me what you got",
+                "sender": "user",
+                "timestamp": "2025-10-28T18:56:18.578Z"
+              },
+              {
+                "id": 1761677796651,
+                "text": "Here's what I found regarding the Fab City ecosystem and its associated organizations:\n\n1. **Fab City Collective**: This is a group of individuals across various fields, including urbanism, design, and engineering, who work towards Fab City's goals. Their efforts facilitate the local implementation of urban sustainability initiatives globally.\n\n2. **Fab City Foundation**: Established in 2020, the Foundation promotes and develops the Fab City Global Initiative. It supports structured implementation through innovation projects, educational programs, and knowledge transfer, operating with a global distributed team.\n\n3. **The Fab City Agenda**: It focuses on maximizing social equality, environmental regeneration, digital skills development, and cultural heritage at both local and global levels. This collaborative effort includes cities and regions in the network and emphasizes the importance of local production and global connectivity.\n\nFor a more detailed understanding, you can explore the following resources: \n\n- **How to Become a Fab City?**: [Resource Document](https://drive.google.com/uc?export=download&id=18mhLVEORmX1XU6J5BhQJzlYmqRyjT6dq)\n- **Fab City Book 2022**: [Resource Document](https://fab.city/wp-content/uploads/2023/03/Fab-City-Book-2022_Bali-Fab-Fest.pdf)\n\nIf you have any specific questions or need additional information, feel free to ask!",
+                "sender": "ai",
+                "timestamp": "2025-10-28T18:56:36.650Z",
+                "isTyped": true
+              }
+            ],
+            "timestamp": "2025-10-28T18:56:59.806Z"
+          },
+          "webhookUrl": "https://automations.manymangoes.com.au/webhook/cfb922b5-3f55-4ccf-94c2-6b83e10d37b9",
+          "executionMode": "production"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Append or update row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "95384b6e-c097-469d-905c-139c0db491c4",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "b7ff1e69201968833d88d7592a2d50b06ea8540a200afa0538e34cf1a57976ac"
+  },
+  "id": "gBvtNJiLkNkpC28J",
+  "tags": []
+}

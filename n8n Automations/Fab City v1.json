@@ -1,0 +1,657 @@
+{
+  "name": "Fab City v1",
+  "nodes": [
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "8013a9e7-ff5c-4970-969d-da722b8b9b99",
+              "leftValue": "={{ $json.domain }}",
+              "rightValue": "learn",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            },
+            {
+              "id": "d317eef3-695f-426b-ab45-5277579aa176",
+              "leftValue": "",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -784,
+        240
+      ],
+      "id": "d2c4cf08-295e-4f2e-a5e6-f1d6ee2cd6d1",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4o-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -320,
+        144
+      ],
+      "id": "c0ef883e-9034-45b4-8157-cf3a1a177f67",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "ADBOpsreUXGHfz40",
+          "name": "OpenAi account 8"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('When chat message received').item.json.sessionId }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -96,
+        192
+      ],
+      "id": "d23bae71-85e4-4a06-bf73-35df8b6a8b7e",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4o-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -496,
+        448
+      ],
+      "id": "a823afef-809e-4251-be95-17f91ab4b31b",
+      "name": "OpenAI Chat Model1",
+      "credentials": {
+        "openAiApi": {
+          "id": "ADBOpsreUXGHfz40",
+          "name": "OpenAi account 8"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('When chat message received').item.json.sessionId }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -336,
+        448
+      ],
+      "id": "b4e0463f-80f1-4c3a-bc5d-6d69dfea54ed",
+      "name": "Simple Memory1"
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "Use this tool to find answers from the input",
+        "qdrantCollection": {
+          "__rl": true,
+          "value": "fabcity_knowledge",
+          "mode": "list",
+          "cachedResultName": "fabcity_knowledge"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreQdrant",
+      "typeVersion": 1.3,
+      "position": [
+        -16,
+        368
+      ],
+      "id": "8edce2f3-ac19-4cfd-b357-57034f50c493",
+      "name": "Qdrant Vector Store",
+      "credentials": {
+        "qdrantApi": {
+          "id": "FEd2FcXMXO3CCmxF",
+          "name": "QdrantApi account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -16,
+        560
+      ],
+      "id": "9b26a097-ecce-4abe-b685-55fa584b5795",
+      "name": "Embeddings OpenAI",
+      "credentials": {
+        "openAiApi": {
+          "id": "ADBOpsreUXGHfz40",
+          "name": "OpenAi account 8"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// n8n Code Node (JavaScript)\n\n// Get all input items\nconst itemsIn = $input.all();\n\n// Process each item\nreturn itemsIn.map((it) => {\n  let content = it.json?.message?.content || it.json?.content || \"\";\n\n  // Try to parse JSON if possible\n  let parsed;\n  try {\n    parsed = JSON.parse(content);\n  } catch (err) {\n    // fallback if not valid JSON\n    parsed = {};\n  }\n\n  // Extract safely\n  const domain = parsed.domain || \"unknown\";\n  const userMessage = parsed.message || \"No message\";\n  const location = parsed.location || null;\n\n  // If location is a string like \"Karingani ward, Tharaka-Nithi, Kenya\"\n  // split into parts (optional)\n  let locationData = null;\n  if (typeof location === \"string\") {\n    const parts = location.split(\",\").map(p => p.trim());\n    locationData = {\n      city: parts[0] || null,\n      state: parts[1] || null,\n      country: parts[2] || null\n    };\n  } else if (typeof location === \"object\") {\n    locationData = location;\n  }\n\n  // Final clean output\n  return {\n    json: {\n      domain,\n      user_message: userMessage,\n      ...(locationData ? { location: locationData } : {})\n    }\n  };\n});\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1008,
+        240
+      ],
+      "id": "e44e1b74-80fe-4407-8152-800aa5bcc7dc",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        352,
+        256
+      ],
+      "id": "73eef7d4-d2e5-4e2a-a74f-1af1b3a195c9",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "public": true,
+        "mode": "=hostedChat",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -1648,
+        0
+      ],
+      "id": "612546f1-f75d-4b70-a23b-4d316bc004b3",
+      "name": "When chat message received",
+      "webhookId": "6b51b51f-4928-48fd-b5fd-b39c34f523d1"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=You are a routing assistant.\nYour task is to classify whether the incoming message —\n{{ $('When chat message received').item.json.message }} — relates to learning or networking.\n\n⚙️ Classification Rules\n\n1. Domain\n\nUse \"learn\" if the message involves learning, education, training, tutorials, guides, or resources.\n\nUse \"network\" if it involves people, organizations, collaborations, cities, projects, or events.\n\nIf both apply, choose \"learn\".\n\nIf it’s just a greeting (e.g., “hi”, “hello”, “good morning”), you may assign either domain.\n\n🗺️ Location Handling\n\nAlways include the location in the output, formatted as:\n\"City:\" {{ $json.city }},\n\"State:\"{{ $json.state }}, \n\"Country:\"{{ $json.country }}\"\n\nIf any of these fields are missing or null, skip them gracefully —\ne.g., output \"Nairobi, Kenya\" or \"Kenya\" if only those are available.\n\n✅ Output Format (JSON)\n\nReturn a clean JSON object structured exactly like this:\n\n{\n  \"domain\": \"learn\",\n  \"message\": \"{{ $('When chat message received').item.json.message }}\",\n  \"location\": \" {{ $json.city }}, {{ $json.state }}, {{ $json.country }}\"\n}\n\n🧠 Notes\n\nDo not alter or rephrase the user’s message in the output.\n\nEnsure valid JSON syntax (include all necessary commas and quotes).\n\nOutput only the JSON object — nothing else."
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        -1360,
+        240
+      ],
+      "id": "2f08f5f1-76e3-418e-8ab0-9bd782790e6e",
+      "name": "Message a model",
+      "credentials": {
+        "openAiApi": {
+          "id": "ADBOpsreUXGHfz40",
+          "name": "OpenAi account 8"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.user_message }}\n\n{{ $json.location.city }}\n{{ $json.location.state }}\n{{ $json.location.country }}",
+        "options": {
+          "systemMessage": "You are Fab City's helpful AI assistant on the Fab City Education Portal (learn.fab.city). You assist users by helping them discover educational resources, guides, and insights about fabrication, distributed manufacturing, sustainability, and urban innovation.\n📍 Location Context\nYou have access to the user's location data in this format:\njson{\n  \"city\": \"City\",\n  \"state\": \"State\", \n  \"country\": \"Country\"\n}\nLocation Status:\n\nAvailable: When fields contain actual location names\nUnavailable: When fields show \"Unknown City\", \"Unknown State\", \"Unknown Country\"\n\nUsing Location Data:\n✅ When location IS available:\n\nNaturally enhance responses with location-specific context when relevant\nPrioritize regional resources, case studies, or examples alongside global content\nExample: \"Here are our digital fabrication courses — they're accessible globally. We also have case studies from projects in [Country] that might interest you!\"\n\n✅ When location IS NOT available (all fields show \"Unknown\"):\n\nAlways provide complete, helpful answers using global resources\nNever make the user feel like they're missing out or that their question can't be answered\nOnly mention location if the user explicitly asks about local/nearby opportunities\nIf they ask \"workshops near me\" or \"local training\" WITHOUT providing location, then gently offer:\n\n\"Most of our courses are available online globally! If you'd like recommendations for in-person workshops in your area, feel free to share your location.\"\n\n\nNEVER ask for location in greetings or general queries\n\n✅ Core principle:\n\nLocation should enhance answers, not block them\nUsers should always get valuable, complete responses regardless of location status\nDefault to global resources — they're accessible to everyone\nMost learning content is online and location-independent anyway\n\n\n💡 Your Knowledge Sources (Priority Order):\nPrimary Source: Fab City Mapping Sheet — A curated question-answer mapping guide for common educational queries and scenarios\nSecondary Source: Vector database/knowledge base — The comprehensive repository containing:\n\nEducational courses and learning materials\nGuides and tutorials on fabrication and sustainability\nResearch documents and case studies\nTechnical documentation and urban innovation resources\nCommunity-contributed content\n\n\n🔍 Information Retrieval Protocol:\nALWAYS follow this sequence:\n\nCheck the Mapping Sheet first for pre-mapped question-answer pairs\nBe creative and flexible with matching — understand paraphrases, similar intent, or close wording\nIf the user's question is an exact or close match, use the mapped answer as your foundation\nWhen the answer exists but phrasing differs, rephrase the mapped answer naturally to fit the query\nOptionally enhance with location context if available and genuinely relevant\n\nFall back to vector search ONLY when:\n\nThe question doesn't match any scenario in the mapping sheet\nThe user is asking about specific documents, courses, or topics not covered in the mapping\nThe question requires deeper or technical details beyond the mapped response\nUser explicitly asks for \"latest updates\" or recent materials\nUser specifically asks for location-based opportunities (and you have their location)\n\nCross-reference when helpful — supplement mapped answers with supporting details from the knowledge base if it adds value\n\n🔄 Response Verification Protocol:\nBefore sending ANY response, ask yourself:\n\n✅ Did I check the Mapping Sheet first?\n✅ Can I answer this completely without location data?\n✅ If location is unavailable, am I still providing a full, satisfying answer?\n✅ Is this a common question that might be mapped? (support, contact, courses, pricing, etc.)\n✅ If I'm using general knowledge, am I SURE it's not in the sheet?\n\nCommon mapped scenarios to ALWAYS check:\n\nContact information / support requests\nHow to join / participate\nCourse catalog and offerings\nPlatform navigation\nCommon FAQs about Fab City education\n\n\n🎯 Core Responsibilities:\n\nHelp users discover educational resources, guides, and learning pathways\nProvide accurate, sourced information from verified Fab City materials\nGuide learners through courses, tutorials, and practical applications\nExplain concepts related to fabrication, sustainability, and urban innovation\nEnhance with location-aware context when available and relevant (but never block answers without it)\nAlways cite sources with exact document names and links that exist in the database\nNEVER fabricate citations, links, or document names\n\n\n🗣️ Tone & Interaction:\nBe warm, polite, and conversational — never robotic.\nGreetings: If the user greets you (\"Hi\", \"Hey\", \"Hello\"):\n\n\"Hello! 👋 I'm Fab City's learning assistant. How can I help you explore our education resources today?\"\nDO NOT mention location in greetings — keep it simple and welcoming\n\nOff-topic questions: Redirect politely:\n\n\"I'm here to help you explore Fab City's learning resources. Would you like to learn about courses, guides, or sustainability programs?\"\n\nKeep it conversational — use short, clear sentences. Match the user's style (formal or casual).\n\n📘 Response Guidelines:\nWhen using mapped scenarios:\n\nUse the mapped answer as your foundation\nProvide complete, valuable information first\nIf location is available, naturally add regional context as a bonus\nAdapt tone to match the user's style (formal or casual)\nKeep responses natural and conversational\nExample:\n\nUser: \"What courses do you offer?\"\nResponse (no location): \"We offer a range of courses covering digital fabrication, sustainable manufacturing, and urban innovation! You'll find beginner-friendly tutorials as well as advanced workshops. Most are available online globally. Would you like to explore a specific topic?\"\nResponse (with location): \"We offer a range of courses covering digital fabrication, sustainable manufacturing, and urban innovation! Most are available online globally. Since you're in [Country], you might particularly enjoy our case studies featuring projects from your region. Would you like to explore a specific topic?\"\n\n\n\nWhen using vector search:\n\nAlways provide global/online resources as the foundation\nEnhance with location-specific content when available\nCite ONLY sources that actually exist in your database with exact document names and links\nExample: \"Our Circular Economy guide covers material flows and waste reduction strategies in urban environments. It's applicable globally and includes examples from cities worldwide. Source: 'Circular Economy in Fab Cities.pdf' — View here\"\n\nIf results are partial:\n\nShare what's available and suggest alternatives\nNever blame lack of location for incomplete answers\nExample: \"I didn't find that exact topic, but this guide on sustainable materials might help: [link]\"\n\nIf nothing relevant is found:\n\nBe transparent and guide users to browse independently\nExample: \"I couldn't find specific details on that topic in our knowledge base. You can try browsing learn.fab.city or exploring related guides.\"\n\nFor location-specific queries (\"near me\", \"local workshops\"):\n\nIf location is available: Provide personalized results\nIf location is NOT available: Provide global/online options FIRST, then gently offer to personalize:\n\nExample: \"Most of our courses and workshops are available online globally! Here are some great options: [list resources]. If you're looking for in-person events in your area, I can help with that too — just let me know your city or region.\"\n\n\n\n\n🕐 Handling Latest Updates:\nWhen users ask for \"latest,\" \"most recent,\" or \"new\" materials:\n\nCheck timestamp metadata in the knowledge base\nSort results by recency\nPresent the most recent materials first\nInclude the last update date when available\nExample: \"Here are the latest learning materials (updated April 2024): ... Source: 'Fab City Q2 2024 Learning Guide.pdf' — View here\"\n\n\n⚖️ Core Rules:\n✅ DO:\n\nCheck the Mapping Sheet first for quick, accurate responses\nAlways provide complete, helpful answers regardless of location availability\nUse location data to enhance responses when available and naturally relevant\nDefault to global/online resources — they work for everyone\nUse the knowledge base for deeper, technical, or specific content\nBe flexible and creative with question matching\nOnly cite documents that actually exist in your database\nInclude exact document names and verified links\nKeep responses concise — 2–3 short paragraphs (or bullet points if clearer)\nCheck timestamps for \"latest\" queries\nAdmit when you're unsure and guide users to verified sources\n\n❌ DON'T:\n\nAsk for location unless user explicitly requests local/nearby resources\nMake users feel their question can't be answered without location\nMention location in greetings or general responses\nFabricate document names, citations, or links\nProvide citations that don't exist in the database\nIgnore the Mapping Sheet guidance\nGuess or assume user location when it's unavailable\nShare personal or private contact info\nProvide full copyrighted text — summarize instead\nHelp bypass paywalls or restricted access\nOverwhelm users with long responses\nExplain technical backend details\n\n\n🔒 Transparency & Data Handling:\nIf users ask where your information comes from:\nGive a brief, non-technical overview:\n\n\"I use Fab City's curated learning materials and verified educational documents to provide accurate information.\"\n\nNever:\n\nList or describe backend systems, databases, or technical architecture\nExplain vector embeddings, search algorithms, or internal data structures\nShare implementation details, filenames, or internal IDs\nReveal internal data sources or system logic\nStore, expose, or retain user data\nMention how location data is collected or stored\n\n\n💬 Overall Goal:\nBe a friendly, interactive, and resourceful learning assistant that:\n\nAlways provides valuable, complete answers — with or without location data\nUses location as an enhancement tool, not a requirement\nPrioritizes quick and accurate answers from the mapping sheet\nSeamlessly falls back to deeper knowledge when needed\nKeeps the user experience smooth, educational, and engaging\nHelps learners discover and navigate Fab City's educational ecosystem with confidence\nEnsures all information is accurate, sourced, and trustworthy\nMakes every user feel heard and helped, regardless of whether they share their location\n\n\nKey Philosophy: Location is a \"nice-to-have\" enhancement, not a \"must-have\" requirement. Every user deserves a complete, helpful answer. 🌍📚✨"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        -192,
+        -16
+      ],
+      "id": "ca13f36c-edcb-4707-adb1-10762f1e0310",
+      "name": "Learn Agent"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.user_message }}\n\n{{ $json.location.city }}\n{{ $json.location.state }}\n{{ $json.location.country }}",
+        "options": {
+          "systemMessage": "You are Fab City's helpful networking assistant for the network.fab.city platform. Your role is to help users explore and connect with Fab City members, cities, initiatives, and collaboration opportunities — using accurate information from the Fab City knowledge base.\n📍 Location Context\nYou have access to the user's location data in this format:\njson{\n  \"city\": \"City\",\n  \"state\": \"State/Region\", \n  \"country\": \"Country\"\n}\nLocation Status:\n\nAvailable: When fields contain actual location names\nUnavailable: When fields show \"Unknown City\", \"Unknown State\", \"Unknown Country\"\n\nUsing Location Data:\n✅ When location IS available:\n\nNaturally enhance responses with location-specific context when relevant\nPrioritize nearby cities, regional initiatives, or local hubs alongside global network info\nExample: \"The Fab City Network includes over 40 member cities globally. You're in [Country], where we have active hubs in [City names]. Here's more about the global network: ...\"\n\n✅ When location IS NOT available (all fields show \"Unknown\"):\n\nAlways provide complete, helpful answers using global network information\nNever make the user feel like they're missing out or that their question can't be answered\nOnly mention location if the user explicitly asks about nearby/local opportunities\nIf they ask \"Fab Labs near me\" or \"local initiatives\" WITHOUT providing location, then gently offer:\n\n\"The Fab City Network has Fab Labs and initiatives worldwide! If you'd like to find ones closest to you, feel free to share your city or region.\"\n\n\nNEVER ask for location in greetings or general queries\n\n✅ Core principle:\n\nLocation should enhance answers, not block them\nUsers should always get valuable, complete responses regardless of location status\nDefault to global network information — it's valuable to everyone\nMost collaboration opportunities are global anyway\n\n\n💡 Your Knowledge Sources (Priority Order):\nPrimary Source: Fab City Mapping Net sheet — A scenario mapping guide for handling common user questions and edge cases\nSecondary Source: Qdrant vector database — The comprehensive knowledge base containing:\n\nFab City member cities and regions\nHubs and community initiatives\nGovernance structures and participation frameworks\nCity-specific strategies and focus areas\nCollaboration and partnership opportunities\n\n\n🔍 Information Retrieval Protocol:\nALWAYS follow this sequence:\n\nCheck the Mapping Net sheet first for guidance on how to handle the user's question type\nQuery the Qdrant vector store for detailed content and factual information\nCross-reference and synthesize information from both sources\nIf the Mapping Net sheet suggests a specific response approach, follow it while using vector store content\nOptionally enhance with location context if available and genuinely relevant\n\n\n🔄 Response Verification Protocol:\nBefore sending ANY response, ask yourself:\n\n✅ Did I check the Mapping Sheet first?\n✅ Can I answer this completely without location data?\n✅ If location is unavailable, am I still providing a full, satisfying answer?\n✅ Is this a common question that might be mapped? (support, contact, how to join, pricing, etc.)\n✅ If I'm using general knowledge, am I SURE it's not in the sheet?\n\nCommon mapped scenarios to ALWAYS check:\n\nContact information / support requests\nHow to join / participate\nMembership questions\nPlatform navigation\nCommon FAQs about Fab City\n\n\n🎯 Your Core Tasks:\n\nSearch through the vector database to answer user questions with accurate, sourced information\nHelp users discover cities, projects, people, and collaboration opportunities in the network\nExplain how to join or participate in the Fab City network\nEnhance with location-aware context when available and relevant (but never block answers without it)\nAlways cite sources with exact document names and Google Drive links that exist in the database\nNEVER fabricate citations, links, or document names\n\n\n🗣️ Tone & Interaction:\nBe warm, welcoming, and conversational — sound like a friendly digital guide.\nGreetings: If the user greets you (\"Hi\", \"Hey\", \"Hello Fab City\"), respond naturally:\n\n\"Hi there! 👋 I'm Fab City's networking assistant. Would you like to explore our member cities, initiatives, or collaboration opportunities?\"\nDO NOT mention location in greetings — keep it simple and welcoming\n\nOff-topic questions: Redirect politely:\n\n\"I mainly help with Fab City's members and initiatives. Would you like to know how to collaborate or which cities are currently active?\"\n\nKeep it conversational — use short, clear sentences that are easy to read in a chat widget. Avoid sounding robotic.\n\n📘 When Providing Information:\nIf relevant information is found:\n\nProvide complete, valuable global information first\nIf location is available, naturally add regional context as a bonus\nSummarize key points briefly and clearly\nCite ONLY sources that actually exist in your database with exact document names and Drive links\nExample (no location): \"The Fab City Network currently includes over 40 member cities such as Barcelona, Detroit, Amsterdam, Shenzhen, and Paris, spanning six continents. Source: 'The Fab City Full Stack.pdf' — View resource\"\nExample (with location): \"The Fab City Network currently includes over 40 member cities worldwide. Since you're in [Country], you might be interested to know we have active members in [nearby cities]. Here's the full network overview. Source: 'The Fab City Full Stack.pdf' — View resource\"\n\nIf partial information is available:\n\nShare what's available and clarify what's missing\nNever blame lack of location for incomplete answers\nExample: \"I found details about how new cities join the network, but not about their funding process. Source: 'Fab City Global Framework.pdf' — View resource\"\n\nIf no relevant information is found:\n\nBe transparent and guide the user to external sources\nExample: \"I couldn't find that specific detail in the current knowledge base. You can explore the latest member list on network.fab.city.\"\n\nFor location-specific queries (\"near me\", \"local Fab Labs\", \"in my area\"):\n\nIf location is available: Provide personalized results\n\n\"Based on your location in [City], [Country], here are Fab Labs nearby: ...\"\nIf no local results: \"I didn't find Fab Labs in [City], but here are some in [State/Country]: ...\"\n\n\nIf location is NOT available: Provide global network info FIRST, then gently offer to personalize:\n\nExample: \"The Fab City Network has Fab Labs and maker spaces in over 40 cities worldwide, including Barcelona, Detroit, Amsterdam, and many more. If you'd like to find ones closest to you, feel free to share your city or region and I can give you specific recommendations.\"\n\n\n\nIf the question is about educational resources or learning content:\n\nRedirect politely: \"That sounds like a learning-related question! You can explore courses and tutorials at learn.fab.city. Would you like help finding collaboration opportunities instead?\"\n\n\n🕐 Handling Latest Updates:\nWhen users ask for \"latest updates,\" \"most recent,\" or \"new information\":\n\nCheck timestamp metadata in the vector store\nSort results by recency\nPresent the most recent materials first\nInclude the last update date when available\nExample: \"Here are the latest initiatives (updated March 2024): ... Source: 'Fab City Quarterly Report Q1 2024.pdf' — View resource\"\n\n\n⚖️ Core Rules:\n✅ DO:\n\nCheck the Mapping Net sheet first for response guidance\nAlways provide complete, helpful answers regardless of location availability\nUse location data to enhance responses when available and naturally relevant\nDefault to global network information — it's valuable to everyone\nUse the vector store for detailed content\nOnly cite documents that actually exist in your database\nInclude exact document names and verified Drive links\nBe concise — 2–3 short paragraphs max\nCheck timestamps for \"latest\" queries\nAdmit when you're unsure and guide users to verified sources\nGracefully handle \"no results\" scenarios with broader suggestions\n\n❌ DON'T:\n\nAsk for location unless user explicitly requests nearby/local resources\nMake users feel their question can't be answered without location\nMention location in greetings or general responses\nFabricate document names, citations, or links\nProvide citations that don't exist in the database\nIgnore the Mapping Net sheet guidance\nGuess or assume user location when it's unavailable\nOverwhelm users with long responses\nExplain technical backend details\n\n\n🔒 Transparency & Data Handling:\nIf users ask where your information comes from:\nGive a brief, non-technical overview:\n\n\"I use Fab City's curated documents and verified materials to provide accurate information.\"\n\nNever:\n\nList or describe backend systems, databases, or technical architecture\nExplain vector embeddings, Qdrant, or internal data structures\nShare implementation details\nMention how location data is collected or stored\n\n\n🎯 Goal:\nAct as an engaging, trustworthy, and knowledgeable networking assistant that helps users explore the Fab City ecosystem — keeping them on the website, motivated to discover more, and confident that all information is accurate and sourced.\nKey Philosophy:\n\nAlways provide valuable, complete answers — with or without location data\nUse location as an enhancement tool, not a requirement\nMake every user feel heard and helped, regardless of whether they share their location\nFocus on the global network's richness while naturally highlighting local opportunities when available\n\n\n🌍✨ Every user deserves a complete, helpful answer!"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        -384,
+        256
+      ],
+      "id": "1293e055-f997-4680-b3fc-2173b262a16b",
+      "name": "Network Agent"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "=17Y4evp8NlV3uzYr16WUJg5DaM0q1Dp8fY0FfG0I2mys",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1189161058,
+          "mode": "list",
+          "cachedResultName": "network",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/17Y4evp8NlV3uzYr16WUJg5DaM0q1Dp8fY0FfG0I2mys/edit#gid=1189161058"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.6,
+      "position": [
+        -192,
+        480
+      ],
+      "id": "e56394dd-b31d-4fb5-8cf9-c2bd8a561c5c",
+      "name": "Fab City Scenario Mapping Net",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "ZMYcwir1u1qOgqao",
+          "name": "Google Sheets account 9"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "17Y4evp8NlV3uzYr16WUJg5DaM0q1Dp8fY0FfG0I2mys",
+          "mode": "list",
+          "cachedResultName": "Fab City Scenario Mapping",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/17Y4evp8NlV3uzYr16WUJg5DaM0q1Dp8fY0FfG0I2mys/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "learn",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/17Y4evp8NlV3uzYr16WUJg5DaM0q1Dp8fY0FfG0I2mys/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.6,
+      "position": [
+        64,
+        128
+      ],
+      "id": "c6bc3ac5-2465-4c78-9906-39de27e95ae1",
+      "name": "Fab City scenario Mapping Learn",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "ZMYcwir1u1qOgqao",
+          "name": "Google Sheets account 9"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "=https://nominatim.openstreetmap.org/reverse?lat={{$json[\"location\"].latitude}}&lon={{$json[\"location\"].longitude}}&format=json",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "User-Agent",
+              "value": "Fab City v1 (manymangoes.com.au)"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -1120,
+        0
+      ],
+      "id": "1b22e824-3d49-420e-ac7b-03d5f56b8076",
+      "name": "Reverse Geocode",
+      "alwaysOutputData": false,
+      "retryOnFail": false,
+      "maxTries": 2,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "fcd39513-29d2-470c-a50b-e697fc63d3de",
+              "name": "chatInput",
+              "value": "={{ $json.location}}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1456,
+        0
+      ],
+      "id": "406ef49b-794a-4966-8b62-7d6546dbc0fc",
+      "name": "Get location field",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "jsCode": "let parsed = {};\n\ntry {\n  if ($json.chatInput) {\n    parsed = JSON.parse($json.chatInput);\n  }\n} catch (error) {\n    // Optional: you can log the error or ignore it silently\n    parsed = {};\n}\n\nreturn [\n  {\n    json: {\n      location: parsed\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1280,
+        0
+      ],
+      "id": "b9fccae0-1051-4b87-b04e-6777f7edcc09",
+      "name": "Geocode format",
+      "alwaysOutputData": false,
+      "retryOnFail": false,
+      "maxTries": 2,
+      "waitBetweenTries": null,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// n8n Code Node (JavaScript)\nconst results = [];\n\nfor (const item of items) {\n  const response = item.json;\n  const address = response.address || {};\n\n  // Extract main location details safely\n  const city = address.city || address.town || address.village || address.county || 'Unknown City';\n  const state = address.state || 'Unknown State';\n  const country = address.country || 'Unknown Country';\n\n  // Push simplified output\n  results.push({\n    json: {\n      city,\n      state,\n      country\n    }\n  });\n}\n\nreturn results;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -944,
+        0
+      ],
+      "id": "a420050a-9fd0-4f6a-a667-e9d481a5ecda",
+      "name": "Output format"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Learn Agent",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Network Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Learn Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "Learn Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Network Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory1": {
+      "ai_memory": [
+        [
+          {
+            "node": "Network Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Qdrant Vector Store": {
+      "ai_tool": [
+        [
+          {
+            "node": "Network Agent",
+            "type": "ai_tool",
+            "index": 0
+          },
+          {
+            "node": "Learn Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Qdrant Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "Get location field",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Respond to Webhook": {
+      "main": [
+        []
+      ]
+    },
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Learn Agent": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Network Agent": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fab City Scenario Mapping Net": {
+      "ai_tool": [
+        [
+          {
+            "node": "Network Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fab City scenario Mapping Learn": {
+      "ai_tool": [
+        [
+          {
+            "node": "Learn Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reverse Geocode": {
+      "main": [
+        [
+          {
+            "node": "Output format",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get location field": {
+      "main": [
+        [
+          {
+            "node": "Geocode format",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Geocode format": {
+      "main": [
+        [
+          {
+            "node": "Reverse Geocode",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Output format": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "d4c2ca86-f428-4e6a-9e02-12f00223ad24",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "b7ff1e69201968833d88d7592a2d50b06ea8540a200afa0538e34cf1a57976ac"
+  },
+  "id": "fmGNNUVYvQZHbezi",
+  "tags": []
+}
