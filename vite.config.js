@@ -9,6 +9,7 @@ export default defineConfig({
       '/api': {
         target: 'https://fab-city-express-1.onrender.com',
         changeOrigin: true,
+        
       }
     },
     allowedHosts: true
