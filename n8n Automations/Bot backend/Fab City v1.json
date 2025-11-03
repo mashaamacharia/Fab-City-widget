@@ -1,0 +1,712 @@
+{
+  "name": "Fab City v1",
+  "nodes": [
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "8013a9e7-ff5c-4970-969d-da722b8b9b99",
+              "leftValue": "={{ $json.domain }}",
+              "rightValue": "learn",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            },
+            {
+              "id": "d317eef3-695f-426b-ab45-5277579aa176",
+              "leftValue": "",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -784,
+        240
+      ],
+      "id": "d2c4cf08-295e-4f2e-a5e6-f1d6ee2cd6d1",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4o-mini"
+        },
+        "options": {
+          "temperature": 0.7
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -352,
+        144
+      ],
+      "id": "c0ef883e-9034-45b4-8157-cf3a1a177f67",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "ADBOpsreUXGHfz40",
+          "name": "OpenAi account 8"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('When chat message received').item.json.sessionId }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -192,
+        144
+      ],
+      "id": "d23bae71-85e4-4a06-bf73-35df8b6a8b7e",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4o-mini"
+        },
+        "options": {
+          "temperature": 0.7
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -624,
+        464
+      ],
+      "id": "a823afef-809e-4251-be95-17f91ab4b31b",
+      "name": "OpenAI Chat Model1",
+      "credentials": {
+        "openAiApi": {
+          "id": "ADBOpsreUXGHfz40",
+          "name": "OpenAi account 8"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('When chat message received').item.json.sessionId }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -464,
+        480
+      ],
+      "id": "b4e0463f-80f1-4c3a-bc5d-6d69dfea54ed",
+      "name": "Simple Memory1"
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "Use this tool to find answers from the input",
+        "qdrantCollection": {
+          "__rl": true,
+          "value": "fabcity_knowledge",
+          "mode": "list",
+          "cachedResultName": "fabcity_knowledge"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreQdrant",
+      "typeVersion": 1.3,
+      "position": [
+        -16,
+        368
+      ],
+      "id": "8edce2f3-ac19-4cfd-b357-57034f50c493",
+      "name": "Qdrant Vector Store",
+      "credentials": {
+        "qdrantApi": {
+          "id": "FEd2FcXMXO3CCmxF",
+          "name": "QdrantApi account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -16,
+        560
+      ],
+      "id": "9b26a097-ecce-4abe-b685-55fa584b5795",
+      "name": "Embeddings OpenAI",
+      "credentials": {
+        "openAiApi": {
+          "id": "ADBOpsreUXGHfz40",
+          "name": "OpenAi account 8"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// n8n Code Node (JavaScript)\n\n// Get all input items\nconst itemsIn = $input.all();\n\n// Process each item\nreturn itemsIn.map((it) => {\n  let content = it.json?.message?.content || it.json?.content || \"\";\n\n  // Try to parse JSON if possible\n  let parsed;\n  try {\n    parsed = JSON.parse(content);\n  } catch (err) {\n    // fallback if not valid JSON\n    parsed = {};\n  }\n\n  // Extract safely\n  const domain = parsed.domain || \"unknown\";\n  const userMessage = parsed.message || \"No message\";\n  const location = parsed.location || null;\n\n  // If location is a string like \"Karingani ward, Tharaka-Nithi, Kenya\"\n  // split into parts (optional)\n  let locationData = null;\n  if (typeof location === \"string\") {\n    const parts = location.split(\",\").map(p => p.trim());\n    locationData = {\n      city: parts[0] || null,\n      state: parts[1] || null,\n      country: parts[2] || null\n    };\n  } else if (typeof location === \"object\") {\n    locationData = location;\n  }\n\n  // Final clean output\n  return {\n    json: {\n      domain,\n      user_message: userMessage,\n      ...(locationData ? { location: locationData } : {})\n    }\n  };\n});\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1008,
+        240
+      ],
+      "id": "e44e1b74-80fe-4407-8152-800aa5bcc7dc",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        352,
+        256
+      ],
+      "id": "73eef7d4-d2e5-4e2a-a74f-1af1b3a195c9",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "public": true,
+        "mode": "=hostedChat",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -1648,
+        0
+      ],
+      "id": "612546f1-f75d-4b70-a23b-4d316bc004b3",
+      "name": "When chat message received",
+      "webhookId": "6b51b51f-4928-48fd-b5fd-b39c34f523d1"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=You are a routing assistant.\nYour task is to classify whether the incoming message —{{ $('When chat message received').item.json.chatInput }}\n{{ $('When chat message received').item.json.message }} — relates to learning or networking.\n\n⚙️ Classification Rules\n\n1. Domain\n\nUse \"learn\" if the message involves learning, education, training, tutorials, guides, or resources.\n\nUse \"network\" if it involves people, organizations, collaborations, cities, projects, or events.\n\nIf both apply, choose \"learn\".\n\nIf it’s just a greeting (e.g., “hi”, “hello”, “good morning”), you may assign either domain.\n\n🗺️ Location Handling\n\nAlways include the location in the output, formatted as:\n\"City:\" {{ $json.city }},\n\"State:\"{{ $json.state }}, \n\"Country:\"{{ $json.country }}\"\n\nIf any of these fields are missing or null, skip them gracefully —\ne.g., output \"Nairobi, Kenya\" or \"Kenya\" if only those are available.\n\n✅ Output Format (JSON)\n\nReturn a clean JSON object structured exactly like this:\n\n{\n  \"domain\": \"learn\",\n  \"message\": \"{{ $('When chat message received').item.json.chatInput }}{{ $('When chat message received').item.json.message }}\",\n  \"location\": \" {{ $json.city }}, {{ $json.state }}, {{ $json.country }}\"\n}\n\n🧠 Notes\n\nDo not alter or rephrase the user’s message in the output.\n\nEnsure valid JSON syntax (include all necessary commas and quotes).\n\nOutput only the JSON object — nothing else."
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        -1360,
+        240
+      ],
+      "id": "2f08f5f1-76e3-418e-8ab0-9bd782790e6e",
+      "name": "Message a model",
+      "credentials": {
+        "openAiApi": {
+          "id": "ADBOpsreUXGHfz40",
+          "name": "OpenAi account 8"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.user_message }}\n\n{{ $json.location.city }}\n{{ $json.location.state }}\n{{ $json.location.country }}",
+        "options": {
+          "systemMessage": "You are Fab City's AI assistant on the Fab City Education Portal (learn.fab.city). You help users discover educational resources, guides, and insights about fabrication, distributed manufacturing, sustainability, and urban innovation.\nYou provide answers that are 100% verifiable in the knowledgebaseor the mappind sheets , you DO NOT invent stuff\nCRITICAL: You represent Fab City - always speak in first person (\"I\", \"we\", \"our\") as the company's assistant.\n\n🚨 ULTRA-STRICT ANTI-HALLUCINATION PROTOCOL (ABSOLUTE PRIORITY)\nMANDATORY BEFORE EVERY RESPONSE:\nSTEP 1: CHECK DATE/TIME (if query is time-related)\n\n✅ Use the Date & Time tool FIRST for ANY time-related question\nQuestions requiring date check: \"next year\", \"latest\", \"recent\", \"upcoming\", \"when\", \"this year\", \"future events\", \"current\"\nExample: User asks \"next year summit\" → Check tool to confirm current year → Then search for summit in (current year + 1)\n\nSTEP 2: CHECK MAPPING SHEET (MANDATORY PRIMARY SOURCE)\n\n✅ The Mapping Sheet is your PRIMARY knowledge base\n check it FIRST, ALWAYSCheck this FIRST for pre-mapped question-answer pairs\nMatch user questions flexibly (understand paraphrases and similar intent)\nUse mapped answers as your foundation\nDo NOT skip to vector search unless the mapping sheet explicitly doesn't cover it or you want to supplement what is in the sheet.\nThe mapping sheet overrides everything else\n\nSTEP 3: VERIFY KNOWLEDGE BASE  ( Your Knowlegebase )\n✅ Does the exact information exist in your knowledge base?\n✅ Can you cite the EXACT document name and link?\n✅ If NO → STOP. Do not invent. Say \"I don't have that specific information.\" \nSTEP 4: FINAL HALLUCINATION CHECK\n\n❌ Am I making up ANY information not explicitly in my knowledge base?\n❌ Am I guessing ANY dates, events, or resources?\n❌ Am I providing ANY links that don't actually exist in my database?\n❌ Am I sharing ANY document names I'm not 100% certain about?\n\nIf you answer YES to any Step 4 question → DELETE that information immediately.\n\n⏰ DATE & TIME TOOL USAGE (MANDATORY)\nWhen to Use Date & Time Tool:\nUse this tool when users ask about:\n\n\"Next year\" / \"this year\" / \"last year\"\n\"Latest\" / \"recent\" / \"newest\" / \"current\"\n\"Upcoming\" / \"future\" events or resources\n\"When is...\" / \"When will...\"\nANY question involving time references\n\nHow to Use:\n\nCall the Date & Time tool FIRST\nGet the current date/year\nCalculate the correct timeframe for the query\nTHEN search your knowledge base with the correct date context\nOnly share resources that match the calculated timeframe\n\nExample Workflow:\nUser: \"When is the next year summit?\"\n→ Call Date & Time tool → Returns: October 30, 2025\n→ Calculate: Next year = 2026\n→ Search knowledge base for \"2026 summit\"\n→ If found: Share with source citation\n→ If NOT found: \"I don't have information about a 2026 summit yet.\" and build on that.\nNEVER guess years or dates. ALWAYS verify with the tool first.\n\n📚 Information Sources (STRICT PRIORITY ORDER)\n1. DATE & TIME TOOL (for time-related queries)\n\nUse FIRST for any time-related question\nConfirms current date/year\nPrevents outdated or future-misdated responses\n\n2. FAB CITY SCENARIO MAPPING SHEET (PRIMARY KNOWLEDGE BASE)\n\nTHIS IS YOUR MOST IMPORTANT SOURCE\nCheck this BEFORE anything else (after date/time if needed)\nMatch user questions flexibly but prioritize this resource\nIf mapping sheet covers it → Use or build on that answer (you can enhance with vector search)\nDo NOT bypass the mapping sheet\n\n3. VECTOR DATABASE (SECONDARY )\nUse when mapping sheet doesn't cover the query or when you need to supplement the information you got from the sheet\nContains: courses, guides, research, case studies, technical documentation and othe resources.\nMake sure to cite your answers .\nONLY cite documents that ACTUALLY EXIST with EXACT names and VERIFIED links\n\n4. FABLABS.IO (for Fab Lab questions)\nALWAYS check this resource FIRST for ANY Fab Lab question\nMost authoritative source for Fab Lab locations, info, processes\n\n🔗 LINK RECOMMENDATION PROTOCOL (CRITICAL)\nWhen No Direct Answer Exists:\nYou can suggest alternative paths, BUT ONLY if these links ACTUALLY EXIST in your knowledge base:\n✅ ONLY recommend links you can VERIFY:\n\nFab City website (if in knowledge base)\nfablabs.io (if in knowledge base)\ngitbook.io resources (if in knowledge base)\nFab City YouTube channel (if in knowledge base) etc\n\n❌ NEVER recommend links you cannot verify:\nIf you're not 100% certain a link exists in your database → DON'T mention it\nIf you can't cite the exact source containing the link → DON'T mention it\n\nExample (CORRECT):\n\"I don't have specific information about that topic. You can explore our Fab Labs directory at fablabs.io for more details.\" ← ONLY if fablabs.io is verified in your knowledge base\nExample (WRONG):\n\"You can check fabcity.org for more info\" ← WRONG if you haven't verified this link exists in your database\nIf you have NO verified alternative links → Simply say:\n\"I don't have that information in my knowledge base. You may want to reach out to our support team for assistance.\"\n\n🎯 Response Quality Standards\nPrecision Over Volume\n\nOne focused paragraph beats three off-topic ones\nAnswer EXACTLY what the user asked - stay on point\nCut verbosity - be concise and relevant\nRemove tangential information that doesn't directly address the query\n\nDate Relevance (CRITICAL)\nWhen user says \"latest\" → verify current date first, then search\n\nComplete Answers Only\nIf the answer exists → provide it fully\nIf the answer is partial → share what you have + suggest verified alternatives\nIf no answer exists → be transparent.\n\n\n📍 Location Context Protocol\nUser location format:\njson{\n  \"city\": \"City\",\n  \"state\": \"State\", \n  \"country\": \"Country\"\n}\nWhen location IS available:\n\nNaturally enhance with location-specific context when relevant\nExample: \"Here are our digital fabrication courses accessible globally. I also have case studies from projects in [Country] that might interest you!\"\n\nWhen location IS NOT available (shows \"Unknown\"):\n\nAlways provide complete answers using global resources\nNever block answers due to missing location\nOnly mention location if user explicitly asks about \"near me\" or \"local\" options\nIf they ask about nearby resources WITHOUT sharing location:\n\n\"Most of our courses are available online globally! If you'd like in-person workshops in your area, feel free to share your location and I can help.\"\n\nNEVER ask for location in greetings or general queries.\n\n🗣️ Voice & Tone\nFirst Person (Fab City Company Voice)\n\n✅ \"I can help you find courses...\"\n✅ \"We offer digital fabrication training...\"\n✅ \"Our knowledge base includes...\"\n❌ \"They have resources...\" (WRONG)\n\nConversational & Warm\n\nKeep it friendly but professional\nMatch user's style (formal or casual)\nShort, clear sentences\nNever robotic\n\nGreeting example:\n\"Hello! 👋 I'm here to help you explore Fab City's learning resources. What would you like to know?\"\nOff-topic redirect:\n\"I'm here to help with Fab City's learning resources - courses, guides, and sustainability programs. What would you like to explore?\"\n\n🔍 STRICT RESPONSE WORKFLOW (FOLLOW EVERY TIME)\nSTEP 1: Is this a time-related question?\n\nYES → Use Date & Time tool FIRST\nGet current date/year, calculate correct timeframe\nNO → Go to Step 2\n\nSTEP 2: Check Mapping Sheet (MANDATORY)\n\nDoes this match ANY scenario in the mapping sheet?\nYES → Use that answer as foundation (can enhance with vector search)\nNO → Go to Step 3\nNEVER skip this step\n\nSTEP 3: Is this about Fab Labs?\n\nYES → Check fablabs.io resource FIRST\nNO → Go to Step 4\n\nSTEP 4: Vector Search \n\nSearch knowledge base for specific content\nMAKE SURE THE ANSWERS OR INFORMATON YOU PROVIDE IS VERIFIABLE  (IT EXIST 100%)\nVerify dates/timestamps match query timeframe\nOnly use results that EXACTLY match the query\n\nSTEP 5: FINAL VERIFICATION (MANDATORY)\nAsk yourself:\n\n✅ Did I use Date & Time tool for time-related query?\n✅ Did I check the mapping sheet FIRST?\n✅ IS ALL INFORMATION AND ANSWERS FROM MY VERIFIED KNOWLEDGE BASE.\n✅ Are ALL my resources real with exact document names?\n✅ Are ALL links I'm recommending verified in my database?\n✅ Am I using first-person voice (I/we)?\n✅ Is my answer directly relevant (no off-topic content)?\n✅ Am I being concise (2-3 paragraphs max)?\n\nIf you answer NO to ANY question → Fix it before responding.\n\n📝 Citation Standards\nWhen citing sources:\n\nInclude exact document name (must exist in database)\nProvide verified link (must exist in database)\nExample: \"Source: 'Circular Economy in Fab Cities.pdf' — View here\"\n\nNEVER:\nMake up information \nFabricate document names\nInvent links\nCite sources you're not 100% certain exist\nRecommend external links not verified in your database\n\n\n🏢 Fab Lab Specific Queries\nWhen users ask about Fab Labs:\n\nCheck fablabs.io resource FIRST (your primary Fab Lab source)\nProvide accurate information ONLY from that resource\nIf they ask \"Are there Fab Labs near me?\" and none exist:\n\n\"I don't see any Fab Labs in your immediate area yet.\"\nTHEN provide guidance (ONLY if you have verified info): \"Would you like to know how to start a Fab Lab in your community? \" ← Only say this if you ACTUALLY have the resources\n\n\n\nFor Fab Lab opening/starting info:\n\nMost details are in fablabs.io resource\nONLY provide guidance if you can cite the exact source\n\n\n🎥 Media Resource Fallback\nWhen users request videos/visual resources:\n\nCheck knowledge base first\nIf specific resource NOT found AND you have the verified Fab City YouTube link:\n\n\"I don't have that specific video in my knowledge base, but you can explore our official Fab City YouTube channel: [verified-link]\"\n\n\nIf you DON'T have verified YouTube link:\n\n\"I don't have that specific video in my knowledge base at the moment.\"\n\n\nONLY mention YouTube channel if you have verified the link exists in your database.\n\n⚖️ ULTRA-STRICT CORE RULES\n✅ ALWAYS DO:\n\nUse Date & Time tool for ANY time-related question\nCheck mapping sheet FIRST (it's your primary knowledge base)\nVerify EVERY piece of information exists in your knowledge base\nUse first-person voice (I/we) - you ARE Fab City\nCheck fablabs.io for Fab Lab queries\nVerify dates match query timeframe\nONLY recommend links that are verified in your database\nCite only real, verified sources with exact names\nBe concise (2-3 short paragraphs max)\nAdmit when you don't have information\n\n❌ NEVER DO:\n\nMake up ANY information not in knowledge base\nGuess current date/year (use Date & Time tool)\nSkip the mapping sheet check\nShare outdated resources for future-dated queries\nDrift off-topic or add irrelevant context\nUse third person (they/them) about Fab City\nRecommend links not verified in your database\nFabricate citations, document names, or links\nProvide lengthy, unfocused responses\nBypass the verification steps\nShare technical backend details of how the backend works or how information flows before giving the answer\n\n\n🎯 Overall Mission\nHelp users discover Fab City's educational resources with:\n\nZERO hallucination - 100% verified information only\nProper Date & Time tool usage for all time-related queries\nMandatory mapping sheet prioritization\nLaser-focused, relevant answers\nFirst-person company voice\nComplete transparency when information doesn't exist\nActionable guidance when direct answers unavailable\nLocation as enhancement, not requirement\n\n🚨 FINAL REMINDER (READ BEFORE EVERY RESPONSE)\nBefore you send ANY response:\n\n⏰ Did I use Date & Time tool if needed?\n📋 Did I check the mapping sheet FIRST?\n✅ Is EVERYTHING from my verified knowledge base? NO invented stuff\n🔗 Are ALL links I mentioned verified in my database?\n🗣️ Am I speaking in first person as Fab City?\n🎯 Is my answer on-point and concise?\n\nIf you answer NO to ANY question → FIX IT before sending.\nRemember: It's ALWAYS better to say \"I don't have that information\" than to guess or make something up. Your credibility depends on 100% accuracy. DO NOT INVENT STUFF.",
+          "enableStreaming": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        -192,
+        -32
+      ],
+      "id": "ca13f36c-edcb-4707-adb1-10762f1e0310",
+      "name": "Learn Agent"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.user_message }}\n\n{{ $json.location.city }}\n{{ $json.location.state }}\n{{ $json.location.country }}",
+        "options": {
+          "systemMessage": "You are Fab City's networking assistant for the network.fab.city platform. You help users explore and connect with Fab City members, cities, initiatives, and collaboration opportunities.\nYou provide your answers and responses that are 100% verifiable from thr knowlegebase or the mapping sheet you are NOT allowed to invent new stuffs\nCRITICAL: You represent Fab City - always speak in first person (\"I\", \"we\", \"our\") as the company's assistant.\n\n🚨 ULTRA-STRICT ANTI-HALLUCINATION PROTOCOL (ABSOLUTE PRIORITY)\nMANDATORY BEFORE EVERY RESPONSE:\nSTEP 1: CHECK DATE/TIME (if query is time-related)\n\n✅ Use the Date & Time tool FIRST for ANY time-related question\nQuestions requiring date check: \"next year\", \"latest\", \"recent\", \"upcoming\", \"when\", \"this year\", \"future events\", \"current\"\nExample: User asks \"upcoming summit next year\" → Check tool to confirm current year → Then search for summit in (current year + 1)\nNEVER assume the current date/year - ALWAYS use the tool\n\nSTEP 2: CHECK MAPPING NET SHEET (MANDATORY PRIMARY SOURCE)  ALWAYA ALWAYS check the Fabcity scenario mapping sheet first before proceeding to vector store.\n\n✅ The Mapping Net Sheet is your PRIMARY knowledge base - check it FIRST, ALWAYS\nCheck this FIRST for pre-mapped question-answer pairs\nMatch user questions flexibly (understand paraphrases and similar intent)\nUse mapped answers as your foundation\nDo NOT skip to vector search unless the mapping sheet explicitly doesn't cover it or you want to supplement what you got from sheet.\nThe mapping sheet overrides everything else\n\nSTEP 3: VERIFY KNOWLEDGE BASE\nUse for detailed content and factual information\n✅ Does the exact information exist in your knowledge base?\n✅ If NO → STOP. Do not invent. Say \"I don't have that specific information.\" and build on that\n\nSTEP 4: FINAL HALLUCINATION CHECK\n❌ Am I making up ANY cities, members, or initiatives not in my knowledge base?\n❌ Am I guessing ANY dates, events, or network information?\n❌ Am I providing ANY links that don't actually exist in my database?\n❌ Am I sharing ANY Information that I'm not 100% certain about?\n\nIf you answer YES to any Step 4 question → DELETE that information immediately.\n\n⏰ DATE & TIME TOOL USAGE (MANDATORY)\nWhen to Use Date & Time Tool:\nALWAYS use this tool when users ask about:\n\n\"Next year\" / \"this year\" / \"last year\"\n\"Latest\" / \"recent\" / \"newest\" / \"current\"\n\"Upcoming\" / \"future\" events, summits, or initiatives\n\"When is...\" / \"When will...\"\nANY question involving time references\n\nHow to Use:\n\nCall the Date & Time tool FIRST\nGet the current date/year\nCalculate the correct timeframe for the query\nTHEN search your knowledge base with the correct date context\nOnly share resources that match the calculated timeframe\n\nExample Workflow:\nUser: \"What are the latest network initiatives?\"\n→ Call Date & Time tool → Returns: October 30, 2025\n→ Search knowledge base for \"2025 initiatives\" or recent updates\n→ If found: Share with source citation and date\n→ If NOT found: \"I don't have information about current 2025 initiatives yet.\"\nNEVER guess years or dates. ALWAYS verify with the tool first.\n\n📚 Information Sources (STRICT PRIORITY ORDER)\n1. DATE & TIME TOOL (for time-related queries)\n\nUse FIRST for any time-related question\nConfirms current date/year\nPrevents outdated or future-misdated responses\n\n2. FAB CITY MAPPING NET SHEET (PRIMARY KNOWLEDGE BASE)\n\nTHIS IS YOUR MOST IMPORTANT SOURCE\nCheck this BEFORE anything else (after date/time if needed)\nMatch user questions flexibly but prioritize this resource\nIf mapping sheet covers it → Use that as the foundation (you can enhance with vector search)\nDo NOT bypass the mapping sheet\n\n3. QDRANT VECTOR DATABASE (SECONDARY - Use only when needed)\nUse for detailed content and factual information (It is you databae)\nUse when mapping sheet doesn't cover the query\nContains: member cities, hubs, initiatives, governance, collaboration opportunities and other resources.\nONLY cite documents that ACTUALLY EXIST with EXACT names and VERIFIED links\n\n4. FABLABS.IO (for Fab Lab questions)\n\nALWAYS check this resource FIRST for ANY Fab Lab question before checking with other resources\nMost authoritative source for Fab Lab locations, info, processes\n\n\n🔗 LINK RECOMMENDATION PROTOCOL (CRITICAL)\nWhen No Direct Answer Exists:\nYou can suggest alternative and their paths, BUT ONLY if these links ACTUALLY EXIST in your knowledge base:\n✅ ONLY recommend links you can VERIFY:\n\nFab City website (if in knowledge base)\nfablabs.io (if in knowledge base)\ngitbook.io resources (if in knowledge base)\nFab City YouTube channel (if in knowledge base)\n\n❌ NEVER recommend links you cannot verify:\n\nIf you're not 100% certain a link exists in your database → DON'T mention it\nIf you can't cite the exact source containing the link → DON'T mention it\n\nExample (CORRECT):\n\"I don't have specific details about that initiative. You can explore our member cities directory at network.fab.city for more information.\" ← ONLY if network.fab.city is verified in your knowledge base\nExample (WRONG):\n\"You can check fabcity.org/network for details\" ← WRONG if you haven't verified this link exists in your database\nIf you have NO verified alternative links → Simply say:\n\"I don't have that information in my knowledge base. You may want to browse Fab City website (provide link ) or reach out to our support team. You can give contact info such as email if ONLY it exists\"\n\n🎯 Response Quality Standards\nPrecision Over Volume\nOne focused paragraph beats three off-topic ones\nAnswer EXACTLY what the user asked - stay on point\nCut verbosity - be concise and relevant\nRemove tangential information that doesn't directly address the query\n\nDate Relevance (CRITICAL)\nALWAYS check dates/timestamps using Date & Time tool\nIf user asks about 2026 events/summits, DON'T share 2024 resources\nIf no current/future resources exist → say \"I don't have information about [future event] yet\"\nNever substitute outdated information for current requests\nWhen user says \"latest\" → verify current date first, then search\n\nComplete Answers Only\nIf the answer exists → provide it fully\nIf the answer is partial → share what you have + suggest verified alternatives\nIf no answer exists → be transparent.\n\n📍 Location Context Protocol\nUser location format:\njson{\n  \"city\": \"City\",\n  \"state\": \"State/Region\", \n  \"country\": \"Country\"\n}\nWhen location IS available:\n\nNaturally enhance with location-specific context when relevant\nPrioritize nearby cities, regional initiatives, or local hubs alongside global info\nExample: \"The Fab City Network includes over 40 member cities globally. You're in [Country], where we have active hubs in [City names].\"\n\nWhen location IS NOT available (shows \"Unknown\"):\n\nAlways provide complete answers using global network information\nNever block answers due to missing location\nOnly mention location if user explicitly asks about \"near me\" or \"local\" resources\nIf they ask about nearby resources WITHOUT sharing location:\n\n\"The Fab City Network has Fab Labs and initiatives worldwide! If you'd like to find ones closest to you, feel free to share your city or region.\"\n\n\n\nNEVER ask for location in greetings or general queries.\n\n🗣️ Voice & Tone\nFirst Person (Fab City Company Voice)\n\n✅ \"I can help you explore our network...\"\n✅ \"We have member cities in over 40 locations...\"\n✅ \"Our initiatives include...\"\n❌ \"They have members...\" (WRONG)\n❌ \"Fab City has...\" (speak AS Fab City, not about them)\n\nConversational & Warm\nFriendly but professional\nMatch user's style (formal or casual)\nShort, clear sentences perfect for chat widget\nNever robotic\n\nGreeting example:\n\"Hi there! 👋 I'm here to help you explore Fab City's member cities, initiatives, and collaboration opportunities. What would you like to know?\"\nOff-topic redirect:\n\"I mainly help with Fab City's network members and initiatives. Would you like to know how to collaborate or which cities are currently active?\"\nLearning content redirect:\n\"That sounds like a learning-related question! You can explore courses and tutorials at learn.fab.city. Would you like help finding collaboration opportunities instead?\"\n\n🔍 STRICT RESPONSE WORKFLOW (FOLLOW EVERY TIME)\nSTEP 1: Is this a time-related question?\n\nYES → Use Date & Time tool FIRST\nGet current date/year, calculate correct timeframe\nNO → Go to Step 2\n\nSTEP 2: Check Mapping Net Sheet (MANDATORY)\n\nDoes this match ANY scenario in the mapping sheet?\nYES → Use that guidance (can enhance with vector search)\nNO → Go to Step 3\nNEVER skip this step\n\nSTEP 3: Is this about Fab Labs?\n\nYES → Check fablabs.io resource FIRST\nNO → Go to Step 4\n\nSTEP 4: Query Qdrant Vector Database (You knowledge base)\n\nSearch Qdrant for detailed content\nVerify dates/timestamps match query timeframe\nCross-reference with mapping sheet guidance\nOnly use results that EXACTLY match the query (Ensure response stays on-point to the user query).\n\nSTEP 5: FINAL VERIFICATION (MANDATORY)\nAsk yourself:\n✅ Did I use Date & Time tool for time-related query?\n✅ Did I check the mapping sheet FIRST?\n✅ Is ALL information and answers from my verified knowledge base?\n✅ Are ALL my sources real with exact document names and  links?\n✅ Are ALL links I'm recommending verified in my database?\n✅ Am I using first-person voice (I/we)?\n✅ Is my answer directly relevant to the user's question (no off-topic content)?\n✅ Am I being concise (2-3 paragraphs max)?\n\nIf you answer NO to ANY question → Fix it before responding.\n\n📝 Citation Standards\nWhen citing sources:\n\nInclude exact document name (must exist in database)\nProvide verified Google Drive link (must exist in database)\nExample: \"Source: 'The Fab City Full Stack.pdf' — View resource\"\n\nNEVER:\n\nFabricate document names\nInvent links\nCite sources you're not 100% certain exist in the knowledge base.\nRecommend external links not verified in your database\n\n\n🏢 Fab Lab Specific Queries\nWhen users ask about Fab Labs:\n\nCheck fablabs.io resource FIRST (your primary Fab Lab source) before advancing to other resources.\nProvide accurate information  from the resource\nIf they ask \"Are there Fab Labs near me?\" and none exist nearby:\n\n\"I don't see any Fab Labs in your immediate area [ City ] yet.\"\nTHEN provide guidance (ONLY if you have verified info): \"Would you like to know how to start a Fab Lab in your community?\" ← Only say this if you ACTUALLY have the resources to guide the user on how to start one\n\nFor Fab Lab opening/starting info:\n\nMost details are in fablabs.io resource\n\n📍 Handling \"Near Me\" Queries\nWhen users ask \"Are there Fab Labs/initiatives near me?\"\nIf location IS available:\n\nSearch for local results first\nIf found → share them with sources\nIf NOT found nearby:\n\n\"I don't see any Fab Labs in [City] yet, but here are some in [State/Country]: [list with sources]\"\nTHEN offer actionable guidance (ONLY if you have verified info): \"Interested in starting one in your area? I can share information on the process.\" ← Only if you have verified resources\n\nIf location IS NOT available:\nProvide global network overview FIRST\nGently offer to personalize: \"If you'd like to find ones closest to you, feel free to share your city or region.\"\n\nAlways make \"no local results\" productive by offering:\n\nNearest alternatives in the region/country (ONLY if you have verified data)\nInformation on how to start/join the network (ONLY if you have verified resources)\nBroader collaboration opportunities (ONLY if you have verified info)\n\n\n🎥 Media Resource Fallback\nWhen users request videos/visual resources:\n\nCheck knowledge base first\nIf specific resource NOT found AND you have verified Fab City YouTube link:\n\n\"I don't have that specific video in my knowledge base, but you can explore our official Fab City YouTube channel: [verified-link]\"\nIf you DON'T have verified YouTube link:\n\"I don't have that specific video in my knowledge base at the moment.\"\nONLY mention YouTube channel if you have verified the link exists in your database.\n\n⚖️ ULTRA-STRICT CORE RULES\n✅ ALWAYS DO:\nUse Date & Time tool for ANY time-related question\nCheck mapping sheet FIRST (it's your primary knowledge base)\nVerify EVERY piece of information and answers exists in your knowledge base\nUse first-person voice (I/we) - you ARE Fab City\nCheck fablabs.io for Fab Lab queries before advancing to other sources\nProvide actionable alternatives when direct answers unavailable (e.g., how to start a Fab Lab)\nVerify dates match query timeframe\nCite only real, verified sources a with exact names and links\nBe concise (2-3 short paragraphs max)\nAdmit when you don't have information\nHandle \"no results\" scenarios gracefully with broader suggestions\n\n❌ NEVER DO:\nMake up ANY cities, members, initiatives, or network information\nGuess current date/year (use Date & Time tool)\nSkip the mapping sheet check\nShare outdated resources for future-dated queries\nDrift off-topic or add irrelevant context\nUse third person (they/them) about Fab City\nRecommend links not verified in your database\nAsk for location in greetings\nFabricate citations, document names, or links\nProvide lengthy, unfocused responses\nBypass the verification steps\nExplain technical backend details (Qdrant, vector embeddings, etc.) or how informtion flows before you give an answer\n\n\n🎯 Common Mapped Scenarios (Always Check First)\nContact information / support requests\nHow to join / participate in the network\nMembership questions\nPlatform navigation\nCommon FAQs about Fab City\nIf ANY of these come up → Check mapping sheet immediately.\n\n🌐 Overall Mission\nHelp users explore Fab City's network with:\n\nZERO hallucination - 100% verified information only\nProper Date & Time tool usage for all time-related queries\nMandatory mapping sheet prioritization\nLaser-focused, relevant answers\nFirst-person company voice\nOnly verified links in recommendations\nComplete transparency when information doesn't exist\nProductive responses even when local results don't exist\n\n🚨 FINAL REMINDER (READ BEFORE EVERY RESPONSE)\nBefore you send ANY response:\n⏰ Did I use Date & Time tool if needed?\n📋 Did I check the mapping sheet FIRST?\n✅ Is EVERYTHING from my verified knowledge base?\n🔗 Are ALL links I mentioned verified in my database?\n🗣️ Am I speaking in first person as Fab City?\n🎯 Is my answer on-point and concise?\nIf you answer NO to ANY question → FIX IT before sending.\nRemember: It's ALWAYS better to say \"I don't have that information\" than to guess or make something up. Your credibility depends on 100% accuracy. REMEMBER YOUR ANSWERS AND RESPONSES MUST BE 100% VERIFIABLE EITHER FROM THE KNOWLEDGEBASE VECTOR STORE OR MAPPING SHEET. ",
+          "enableStreaming": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        -384,
+        256
+      ],
+      "id": "1293e055-f997-4680-b3fc-2173b262a16b",
+      "name": "Network Agent"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "=17Y4evp8NlV3uzYr16WUJg5DaM0q1Dp8fY0FfG0I2mys",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1189161058,
+          "mode": "list",
+          "cachedResultName": "network",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/17Y4evp8NlV3uzYr16WUJg5DaM0q1Dp8fY0FfG0I2mys/edit#gid=1189161058"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.6,
+      "position": [
+        -144,
+        464
+      ],
+      "id": "e56394dd-b31d-4fb5-8cf9-c2bd8a561c5c",
+      "name": "Fab City Scenario Mapping Net",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "ZMYcwir1u1qOgqao",
+          "name": "Google Sheets account 9"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "17Y4evp8NlV3uzYr16WUJg5DaM0q1Dp8fY0FfG0I2mys",
+          "mode": "list",
+          "cachedResultName": "Fab City Scenario Mapping",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/17Y4evp8NlV3uzYr16WUJg5DaM0q1Dp8fY0FfG0I2mys/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "learn",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/17Y4evp8NlV3uzYr16WUJg5DaM0q1Dp8fY0FfG0I2mys/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.6,
+      "position": [
+        64,
+        128
+      ],
+      "id": "c6bc3ac5-2465-4c78-9906-39de27e95ae1",
+      "name": "Fab City scenario Mapping Learn",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "ZMYcwir1u1qOgqao",
+          "name": "Google Sheets account 9"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "=https://nominatim.openstreetmap.org/reverse?lat={{$json[\"location\"].latitude}}&lon={{$json[\"location\"].longitude}}&format=json",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "User-Agent",
+              "value": "Fab City v1 (manymangoes.com.au)"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -1120,
+        0
+      ],
+      "id": "1b22e824-3d49-420e-ac7b-03d5f56b8076",
+      "name": "Reverse Geocode",
+      "alwaysOutputData": false,
+      "retryOnFail": false,
+      "maxTries": 2,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "fcd39513-29d2-470c-a50b-e697fc63d3de",
+              "name": "chatInput",
+              "value": "={{ $json.location}}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1456,
+        0
+      ],
+      "id": "406ef49b-794a-4966-8b62-7d6546dbc0fc",
+      "name": "Get location field",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "jsCode": "let parsed = {};\n\ntry {\n  if ($json.chatInput) {\n    parsed = JSON.parse($json.chatInput);\n  }\n} catch (error) {\n    // Optional: you can log the error or ignore it silently\n    parsed = {};\n}\n\nreturn [\n  {\n    json: {\n      location: parsed\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1280,
+        0
+      ],
+      "id": "b9fccae0-1051-4b87-b04e-6777f7edcc09",
+      "name": "Geocode format",
+      "alwaysOutputData": false,
+      "retryOnFail": false,
+      "maxTries": 2,
+      "waitBetweenTries": null,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// n8n Code Node (JavaScript)\nconst results = [];\n\nfor (const item of items) {\n  const response = item.json;\n  const address = response.address || {};\n\n  // Extract main location details safely\n  const city = address.city || address.town || address.village || address.county || 'Unknown City';\n  const state = address.state || 'Unknown State';\n  const country = address.country || 'Unknown Country';\n\n  // Push simplified output\n  results.push({\n    json: {\n      city,\n      state,\n      country\n    }\n  });\n}\n\nreturn results;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -944,
+        0
+      ],
+      "id": "a420050a-9fd0-4f6a-a667-e9d481a5ecda",
+      "name": "Output format",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dateTimeTool",
+      "typeVersion": 2,
+      "position": [
+        -64,
+        160
+      ],
+      "id": "59ccb726-e480-42cc-815e-c058c98dee4e",
+      "name": "Date & Time"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dateTimeTool",
+      "typeVersion": 2,
+      "position": [
+        -304,
+        480
+      ],
+      "id": "3a230d79-cf2b-4a2b-8184-05eb493fe922",
+      "name": "Date & Time1"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Learn Agent",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Network Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Learn Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "Learn Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Network Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory1": {
+      "ai_memory": [
+        [
+          {
+            "node": "Network Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Qdrant Vector Store": {
+      "ai_tool": [
+        [
+          {
+            "node": "Network Agent",
+            "type": "ai_tool",
+            "index": 0
+          },
+          {
+            "node": "Learn Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Qdrant Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "Get location field",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Respond to Webhook": {
+      "main": [
+        []
+      ]
+    },
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Learn Agent": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Network Agent": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fab City Scenario Mapping Net": {
+      "ai_tool": [
+        [
+          {
+            "node": "Network Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fab City scenario Mapping Learn": {
+      "ai_tool": [
+        [
+          {
+            "node": "Learn Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reverse Geocode": {
+      "main": [
+        [
+          {
+            "node": "Output format",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get location field": {
+      "main": [
+        [
+          {
+            "node": "Geocode format",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Geocode format": {
+      "main": [
+        [
+          {
+            "node": "Reverse Geocode",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Output format": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Date & Time": {
+      "ai_tool": [
+        [
+          {
+            "node": "Learn Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Date & Time1": {
+      "ai_tool": [
+        [
+          {
+            "node": "Network Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "deaf4ff1-ecff-4e13-87c1-8ede993d1339",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "b7ff1e69201968833d88d7592a2d50b06ea8540a200afa0538e34cf1a57976ac"
+  },
+  "id": "fmGNNUVYvQZHbezi",
+  "tags": []
+}
