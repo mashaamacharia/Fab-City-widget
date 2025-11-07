@@ -26,12 +26,12 @@ body {
 }
 
 .chat-scrollbar::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
+  background: #404040;
   border-radius: 10px;
 }
 
 .chat-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+  background: #505050;
 }
 
 /* Markdown styles */
@@ -61,7 +61,7 @@ body {
 }
 
 .markdown-content code {
-  @apply bg-gray-100 px-1 py-0.5 rounded text-xs;
+  @apply bg-gray-800 text-gray-200 px-1 py-0.5 rounded text-xs;
 }
 
 /* Glow effect for close button */
@@ -73,3 +73,23 @@ body {
     opacity: 1;
   }
 }
+
+/* Sleek horizontal gradient background
+   - Center: #1C1C1C
+   - Edges: #000000
+   - Uses a subtle radial overlay to reduce apparent banding and add a soft "spotlight" feel
+*/
+.sleek-gradient {
+  background-color: #1C1C1C; /* fallback */
+  background-image: 
+    linear-gradient(90deg, #000000 0%, #0b0b0b 20%, #1C1C1C 50%, #0b0b0b 80%, #000000 100%),
+    radial-gradient(ellipse at center, rgba(255,255,255,0.02) 0%, rgba(255,255,255,0.008) 12%, transparent 45%);
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  background-size: cover;
+  background-blend-mode: overlay;
+  /* smoothing and ensure layer sits behind content */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+

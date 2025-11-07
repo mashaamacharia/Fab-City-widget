@@ -98,7 +98,7 @@ const Message = ({ message, onLinkClick }) => {
         className={`max-w-[85%] md:max-w-[75%] px-5 py-4 rounded-2xl ${
           isUser
             ? 'bg-fabcity-green text-white shadow-md '
-            : 'bg-gray-100 text-black border border-fabcity-blue/30'
+            : 'bg-[#2C2C2C] text-white border border-gray-700'
         }`}
       >
         <div className="markdown-content">

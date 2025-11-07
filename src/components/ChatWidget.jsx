@@ -283,9 +283,9 @@ const ChatInterface = () => {
 
   return (
     <>
-      <div className="h-screen w-full bg-white flex flex-col">
+      <div className="h-screen w-full sleek-gradient flex flex-col">
         {/* Header */}
-        <div className="relative bg-white sticky top-0 z-10">
+        <div className="relative bg-transparent sticky top-0 z-10">
           <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-fabcity-green"></div>
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
             <div className="flex items-center justify-between">
@@ -294,8 +294,8 @@ const ChatInterface = () => {
                   <img src={logoUrl} alt="Fab City Logo" className="w-full h-full object-cover" />
                 </div>
                 <div>
-                  <h1 className="text-xl font-semibold text-gray-900">Fab City Assistant</h1>
-                  <p className="text-sm text-gray-500">Your guide to urban innovation</p>
+                  <h1 className="text-xl font-semibold text-white">Fab City Assistant</h1>
+                  <p className="text-sm text-gray-400">Your guide to urban innovation</p>
                 </div>
               </div>
             </div>
@@ -335,21 +335,21 @@ const ChatInterface = () => {
                 <div className="w-24 h-24 rounded-full overflow-hidden flex items-center justify-center mb-6 shadow-xl">
                   <img src={logoUrl} alt="Fab City Logo" className="w-full h-full object-cover" />
                 </div>
-                <h2 className="text-3xl font-bold text-gray-900 mb-3 text-center">
+                <h2 className="text-3xl font-bold text-white mb-3 text-center">
                   Welcome to Fab City
                 </h2>
-                <p className="text-lg text-gray-600 mb-8 text-center max-w-2xl">
+                <p className="text-lg text-gray-300 mb-8 text-center max-w-2xl">
                   Your intelligent assistant for exploring sustainable urban innovation,
                   circular manufacturing, and the future of cities.
                 </p>
                 {location && (
-                  <div className="flex items-center gap-2 text-sm text-green-600 mb-4">
+                  <div className="flex items-center gap-2 text-sm text-green-400 mb-4">
                     <MapPin size={16} />
                     <span>Location enabled - answers personalized for your area</span>
                   </div>
                 )}
                 <div className="w-full max-w-2xl">
-                  <p className="text-sm font-medium text-gray-700 mb-4">Suggested questions:</p>
+                  <p className="text-sm font-medium text-gray-300 mb-4">Suggested questions:</p>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     {SUGGESTIONS.map((suggestion, index) => (
                       <SuggestionChip
@@ -416,7 +416,7 @@ const ChatInterface = () => {
         </AnimatePresence>
 
         {/* Input Area */}
-        <div className="border-t border-gray-200 bg-white sticky bottom-0">
+  <div className="border-t border-gray-700 bg-transparent sticky bottom-0">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
             <div className="flex items-end gap-3">
               <div className="flex-1">
@@ -426,7 +426,7 @@ const ChatInterface = () => {
                   onChange={(e) => setInputValue(e.target.value)}
                   onKeyPress={handleKeyPress}
                   placeholder="Ask me anything about Fab City..."
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-fabcity-green focus:border-transparent resize-none text-gray-900 placeholder-gray-400"
+                  className="w-full px-4 py-3 border border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-fabcity-green focus:border-transparent resize-none bg-[#2C2C2C] text-white placeholder-gray-400"
                   rows="1"
                   style={{ minHeight: '52px', maxHeight: '120px' }}
                 />
