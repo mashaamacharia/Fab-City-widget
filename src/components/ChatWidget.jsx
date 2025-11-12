@@ -292,7 +292,7 @@ const ChatInterface = () => {
       <div className="h-screen w-full sleek-gradient flex flex-col">
         {/* Header */}
         <div className="relative bg-transparent sticky top-0 z-10">
-          <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-fabcity-green"></div>
+          <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-gray-400"></div>
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -365,7 +365,7 @@ const ChatInterface = () => {
                   <div className="flex items-center gap-2 text-sm text-green-400 mb-4">
                     <MapPin size={16} />
                     <span>
-                      Location enabled - answers personalized for your area
+                      Location Enabled - Get answers for your area.
                     </span>
                   </div>
                 )}
@@ -472,7 +472,7 @@ const ChatInterface = () => {
                   }}
                   onKeyPress={handleKeyPress}
                   placeholder="Ask me anything about Fab City..."
-                  className="w-full px-4 py-3 border border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-fabcity-green focus:border-transparent resize-none bg-[#2C2C2C] text-white placeholder-gray-400"
+                  className="w-full px-4 py-3 border border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent resize-none bg-[#2C2C2C] text-white placeholder-gray-400"
                   rows="1"
                   style={{
                     minHeight: "52px",
@@ -490,7 +490,7 @@ const ChatInterface = () => {
               </button>
             </div>
             <p className="text-xs text-gray-400 mt-3 text-center">
-              Powered by Fab City AI & <span>manymangoes</span> • Press Enter to
+              Powered by Fab City AI & <span>ManyMangoes</span> • Press Enter to
               send
             </p>
           </div>

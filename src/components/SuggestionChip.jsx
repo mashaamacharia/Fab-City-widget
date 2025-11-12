@@ -6,7 +6,7 @@ const SuggestionChip = ({ text, onClick }) => {
       whileHover={{ scale: 1.02 }}
       whileTap={{ scale: 0.98 }}
       onClick={() => onClick(text)}
-      className="px-4 py-3 bg-white border border-gray-200 rounded-xl hover:border-fabcity-green hover:bg-fabcity-green/5 transition-colors text-left text-sm text-gray-700 shadow-sm"
+      className="px-4 py-3 bg-black border border-gray-600 rounded-xl hover:bg-white hover:text-black hover:border-gray-400 transition-colors text-left text-sm text-white shadow-sm"
     >
       {text}
     </motion.button>
