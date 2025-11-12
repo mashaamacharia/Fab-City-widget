@@ -22,6 +22,7 @@ const ChatInterface = () => {
   const [messages, setMessages] = useState([]);
   const [inputValue, setInputValue] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isAnimatingSend, setIsAnimatingSend] = useState(false);
   const [error, setError] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
   const [sessionId, setSessionId] = useState(null);
@@ -183,6 +184,19 @@ const ChatInterface = () => {
     };
   }, [error]);
 
+  // Paper-plane send animation variants
+  const planeVariants = {
+    idle: { x: 0, y: 0, rotate: 0, opacity: 1, scale: 1 },
+    sending: {
+      x: 56,
+      y: -32,
+      rotate: 20,
+      opacity: 0,
+      scale: 0.9,
+      transition: { duration: 0.6, ease: [0.2, 0.8, 0.2, 1] },
+    },
+  };
+
   const handleTypingComplete = (messageId) => {
     setMessages((prev) =>
       prev.map((msg) =>
@@ -193,6 +207,11 @@ const ChatInterface = () => {
 
   const handleSendMessage = async () => {
     if (!inputValue.trim() || isLoading) return;
+
+    // trigger send animation
+    setIsAnimatingSend(true);
+    // clear animation after it completes
+    setTimeout(() => setIsAnimatingSend(false), 700);
 
     const userMessage = {
       id: Date.now(),
@@ -458,36 +477,59 @@ const ChatInterface = () => {
         {/* Input Area */}
   <div className="border-t border-gray-700 bg-transparent sticky bottom-0">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-            <div className="flex items-end gap-3">
+            <div className="flex items-center gap-3">
               <div className="flex-1">
+                {/* Textarea sits here; send button is a sibling */}
                 <textarea
                   ref={inputRef}
                   value={inputValue}
                   onChange={(e) => {
                     setInputValue(e.target.value);
-                    // Auto-resize textarea
-                    e.target.style.height = "52px";
-                    e.target.style.height =
-                      Math.min(e.target.scrollHeight, 120) + "px";
+                    // Auto-resize textarea: reset height then set to scrollHeight
+                    e.target.style.height = 'auto';
+                    const newHeight = Math.min(e.target.scrollHeight, 600);
+                    e.target.style.height = newHeight + 'px';
                   }}
                   onKeyPress={handleKeyPress}
                   placeholder="Ask me anything about Fab City..."
-                  className="w-full px-4 py-3 border border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent resize-none bg-[#2C2C2C] text-white placeholder-gray-400"
+                  className="chat-input-textarea w-full px-4 py-3 border border-gray-700 rounded-full focus:outline-none focus:ring-1 focus:ring-gray-500 focus:border-transparent resize-none bg-[#151515] text-white placeholder-gray-500 shadow-sm"
                   rows="1"
                   style={{
-                    minHeight: "52px",
-                    maxHeight: "120px",
-                    height: "52px",
+                    minHeight: "48px",
+                    height: "48px",
                   }}
                 />
               </div>
-              <button
-                onClick={handleSendMessage}
-                disabled={!inputValue.trim() || isLoading}
-                className="bg-fabcity-green hover:bg-fabcity-green/90 disabled:bg-gray-300 disabled:cursor-not-allowed text-white rounded-xl p-3.5 transition-colors shadow-sm"
-              >
-                <Send size={20} />
-              </button>
+
+              {/* Send button placed next to the input */}
+              <AnimatePresence>
+                {(inputValue.trim() || isLoading) && (
+                  <motion.button
+                    key="send-button-outside"
+                    initial={{ opacity: 0, y: 6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 6 }}
+                    transition={{ duration: 0.18 }}
+                    onClick={handleSendMessage}
+                    disabled={!inputValue.trim() || isLoading}
+                    className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors select-none z-10 ${
+                      !inputValue.trim() || isLoading
+                        ? 'bg-gray-700 text-gray-300 cursor-not-allowed opacity-60 border border-gray-700'
+                        : 'bg-[#0f1720] hover:bg-[#111827] text-white border border-gray-700'
+                    }`}
+                    aria-label="Send message"
+                  >
+                    <motion.div
+                      variants={planeVariants}
+                      animate={isAnimatingSend ? 'sending' : 'idle'}
+                      initial="idle"
+                      style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                    >
+                      <Send size={16} />
+                    </motion.div>
+                  </motion.button>
+                )}
+              </AnimatePresence>
             </div>
             <p className="text-xs text-gray-400 mt-3 text-center">
               Powered by Fab City AI & <span>ManyMangoes</span> • Press Enter to

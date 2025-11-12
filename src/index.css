@@ -93,3 +93,14 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Chat input tweaks */
+.chat-input-textarea {
+  overflow: hidden; /* avoid inner scrollbar */
+  resize: none; /* ensure no manual resize handle */
+  scrollbar-width: none; /* firefox */
+}
+.chat-input-textarea::-webkit-scrollbar {
+  display: none; /* webkit */
+}
+
+
