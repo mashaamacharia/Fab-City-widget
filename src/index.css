@@ -103,4 +103,198 @@ body {
   display: none; /* webkit */
 }
 
+/* Widget Button Styles with Fab City Colors */
+.fabcity-widget-button {
+  background: linear-gradient(135deg, #1E40AF 0%, #1E40AF 45%, #DC2626 45%, #DC2626 90%, #16A34A 90%, #16A34A 100%);
+  position: relative;
+  overflow: visible;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  transition: all 0.3s ease;
+}
+
+.fabcity-widget-button::before {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #1E40AF, #DC2626, #16A34A, #1E40AF);
+  opacity: 0.7;
+  z-index: -1;
+  filter: blur(12px);
+  animation: rotate-gradient 3s linear infinite;
+}
+
+@keyframes rotate-gradient {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Pulsing Ring Animation */
+@keyframes pulse-ring {
+  0% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+  50% {
+    transform: scale(1.5);
+    opacity: 0.4;
+  }
+  100% {
+    transform: scale(2);
+    opacity: 0;
+  }
+}
+
+.fabcity-pulse-ring {
+  background: radial-gradient(circle, rgba(30, 64, 175, 0.6) 0%, rgba(220, 38, 38, 0.4) 40%, transparent 70%);
+  animation: pulse-ring 2.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  z-index: -2;
+}
+
+/* Glowing Ring Animation */
+@keyframes glow-ring {
+  0%, 100% {
+    box-shadow: 
+      0 0 25px rgba(30, 64, 175, 0.7),
+      0 0 50px rgba(30, 64, 175, 0.5),
+      0 0 75px rgba(220, 38, 38, 0.4),
+      0 0 100px rgba(22, 163, 74, 0.3),
+      inset 0 0 25px rgba(22, 163, 74, 0.25);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 
+      0 0 35px rgba(30, 64, 175, 0.9),
+      0 0 70px rgba(30, 64, 175, 0.7),
+      0 0 105px rgba(220, 38, 38, 0.6),
+      0 0 140px rgba(22, 163, 74, 0.4),
+      inset 0 0 35px rgba(22, 163, 74, 0.5);
+    transform: scale(1.08);
+  }
+}
+
+.fabcity-glow-ring {
+  animation: glow-ring 2.2s ease-in-out infinite;
+  z-index: -1;
+  background: radial-gradient(circle, rgba(30, 64, 175, 0.4) 0%, rgba(220, 38, 38, 0.3) 40%, rgba(22, 163, 74, 0.2) 70%, transparent 100%);
+}
+
+/* Inner Glow Effect */
+@keyframes inner-glow {
+  0%, 100% {
+    opacity: 0.4;
+    box-shadow: inset 0 0 15px rgba(22, 163, 74, 0.3);
+  }
+  50% {
+    opacity: 0.7;
+    box-shadow: inset 0 0 25px rgba(22, 163, 74, 0.5);
+  }
+}
+
+.fabcity-inner-glow {
+  animation: inner-glow 2.5s ease-in-out infinite;
+  background: radial-gradient(circle at center, rgba(22, 163, 74, 0.3) 0%, transparent 70%);
+}
+
+/* Hover effect enhancement */
+.fabcity-widget-button:hover {
+  box-shadow: 
+    0 0 40px rgba(30, 64, 175, 0.8),
+    0 0 80px rgba(220, 38, 38, 0.6),
+    0 0 120px rgba(22, 163, 74, 0.4);
+}
+
+/* Close Button Styles with Pulsing Gradient */
+
+.fabcity-close-button::before {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #1E40AF, #16A34A, #1E40AF);
+  opacity: 0.6;
+  z-index: -1;
+  filter: blur(8px);
+  animation: close-rotate-gradient 3s linear infinite;
+}
+
+@keyframes close-rotate-gradient {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Pulsing effect for close button */
+@keyframes close-pulse {
+  0%, 100% {
+    opacity: 0.7;
+    transform: scale(1);
+    box-shadow: 
+      0 0 20px rgba(30, 64, 175, 0.6),
+      0 0 40px rgba(22, 163, 74, 0.4),
+      0 0 60px rgba(30, 64, 175, 0.3);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.08);
+    box-shadow: 
+      0 0 30px rgba(30, 64, 175, 0.9),
+      0 0 60px rgba(22, 163, 74, 0.7),
+      0 0 90px rgba(30, 64, 175, 0.5);
+  }
+}
+
+/* Main button pulse animation */
+@keyframes close-button-pulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 
+      0 0 20px rgba(30, 64, 175, 0.7),
+      0 0 40px rgba(22, 163, 74, 0.5),
+      inset 0 0 20px rgba(30, 64, 175, 0.2);
+  }
+  50% {
+    transform: scale(1.05);
+    box-shadow: 
+      0 0 35px rgba(30, 64, 175, 0.9),
+      0 0 70px rgba(22, 163, 74, 0.7),
+      inset 0 0 30px rgba(30, 64, 175, 0.4);
+  }
+}
+
+.fabcity-close-button {
+  background: linear-gradient(135deg, #1E40AF 0%, #1E40AF 60%, #16A34A 60%, #16A34A 100%) !important;
+  border: 2px solid rgba(255, 255, 255, 0.2) !important;
+  position: fixed !important;
+  overflow: visible;
+  right: 1.5rem !important;
+  left: auto !important;
+  top: 1.5rem !important;
+  animation: close-button-pulse 2s ease-in-out infinite !important;
+}
+
+.fabcity-close-pulse {
+  background: radial-gradient(circle, rgba(30, 64, 175, 0.5) 0%, rgba(22, 163, 74, 0.4) 50%, transparent 100%);
+  animation: close-pulse 2s ease-in-out infinite;
+  z-index: -1;
+}
+
+/* Hover effect for close button */
+.fabcity-close-button:hover {
+  background: linear-gradient(135deg, #2563EB 0%, #2563EB 60%, #22C55E 60%, #22C55E 100%) !important;
+  animation-duration: 1s !important;
+  border-color: rgba(255, 255, 255, 0.4) !important;
+}
+
+.fabcity-close-button:hover .fabcity-close-pulse {
+  animation-duration: 0.8s;
+}
+
 
