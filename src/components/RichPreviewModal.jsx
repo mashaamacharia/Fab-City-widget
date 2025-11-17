@@ -11,9 +11,9 @@ const RichPreviewModal = ({ url, onClose }) => {
   const [loadingMetadata, setLoadingMetadata] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
   const [showBanner, setShowBanner] = useState(true);
+  const [autoOpenedExternal, setAutoOpenedExternal] = useState(false);
   const iframeRef = useRef(null);
   const embedTimeoutRef = useRef(null);
-  const bannerTimeoutRef = useRef(null);
 
   // Detect file type from URL
   const detectFileType = useCallback((targetUrl) => {
@@ -251,6 +251,7 @@ const RichPreviewModal = ({ url, onClose }) => {
     setLoadingMetadata(false);
     setMetadata(null);
     setShowBanner(true);
+    setAutoOpenedExternal(false);
     
     const type = detectFileType(url);
     const processed = processUrl(url, type);
@@ -265,29 +266,51 @@ const RichPreviewModal = ({ url, onClose }) => {
         // If we reach here, iframe might be loading slowly or failing
         // We'll let the iframe error handler take care of it
       }, 5000);
-      
-      // Auto-hide banner after 10 seconds
-      bannerTimeoutRef.current = setTimeout(() => {
-        setShowBanner(false);
-      }, 10000);
     }
     
     return () => {
       if (embedTimeoutRef.current) {
         clearTimeout(embedTimeoutRef.current);
       }
-      if (bannerTimeoutRef.current) {
-        clearTimeout(bannerTimeoutRef.current);
-      }
     };
   }, [url, detectFileType, processUrl]);
+
+  const autoOpenExternal = useCallback(() => {
+    if (autoOpenedExternal) return;
+    const newWindow = window.open(url, '_blank', 'noopener,noreferrer');
+    if (newWindow) {
+      newWindow.focus();
+      setAutoOpenedExternal(true);
+      onClose?.();
+    } else {
+      console.warn('Popup blocked while trying to open external site.');
+    }
+  }, [autoOpenedExternal, url, onClose]);
 
   // Handle iframe load
   const handleIframeLoad = () => {
     if (embedTimeoutRef.current) {
       clearTimeout(embedTimeoutRef.current);
     }
-    setFileType(prev => prev === 'loading' ? 'web' : prev);
+    setFileType(prev => (prev === 'loading' ? 'web' : prev));
+
+    if (fileType === 'web') {
+      const iframe = iframeRef.current;
+      if (iframe) {
+        try {
+          const frameLocation = iframe.contentWindow?.location?.href;
+          if (!frameLocation || frameLocation === 'about:blank') {
+            setEmbedFailed(true);
+            if (!metadata) {
+              fetchMetadata(url);
+            }
+            autoOpenExternal();
+          }
+        } catch (err) {
+          // Accessing cross-origin frame succeeded, so consider it loaded.
+        }
+      }
+    }
   };
 
   // Handle iframe error
@@ -298,6 +321,9 @@ const RichPreviewModal = ({ url, onClose }) => {
     setEmbedFailed(true);
     if (fileType === 'web' && !metadata) {
       fetchMetadata(url);
+    }
+    if (fileType === 'web') {
+      autoOpenExternal();
     }
   };
 
