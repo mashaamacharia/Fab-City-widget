@@ -7,7 +7,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: 'https://fab-city-express-1.onrender.com',
+        target: 'https://fab-city-widgetbackend.onrender.com',
         changeOrigin: true,
         
       }
