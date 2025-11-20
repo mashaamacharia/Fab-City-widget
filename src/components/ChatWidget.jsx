@@ -3,7 +3,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { MessageCircle, Send, Sparkles, MapPin } from "lucide-react";
 import Message from "./Message";
 import LoadingIndicator from "./LoadingIndicator";
-import RichPreviewModal from "./RichPreviewModal";
+// import RichPreviewModal from "./RichPreviewModal";
+import openInPopup from "./RichPreviewModal";
 import SuggestionChip from "./SuggestionChip";
 
 const SUGGESTIONS = [
@@ -15,7 +16,7 @@ const SUGGESTIONS = [
 
 const ChatInterface = () => {
   // API URL for the chat interface
-  // 'https://fab-city-express-1.onrender.com' ||http://localhost:3001
+  // const apiUrl= "http://localhost:3001"
   const apiUrl = "https://fab-city-express-1.onrender.com";
   const logoUrl = "/fab-city-logo.png";
 
@@ -24,7 +25,7 @@ const ChatInterface = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isAnimatingSend, setIsAnimatingSend] = useState(false);
   const [error, setError] = useState(null);
-  const [previewUrl, setPreviewUrl] = useState(null);
+  // const [previewUrl, setPreviewUrl] = useState(null);
   const [sessionId, setSessionId] = useState(null);
   const [domain, setDomain] = useState(null);
   const [location, setLocation] = useState(null);
@@ -297,9 +298,9 @@ const ChatInterface = () => {
     }
   };
 
-  const handleLinkClick = (url) => {
-    setPreviewUrl(url);
-  };
+  // const handleLinkClick = (url) => {
+  //   setPreviewUrl(url);
+  // };
 
   const handleSuggestionClick = (suggestion) => {
     setInputValue(suggestion);
@@ -410,7 +411,7 @@ const ChatInterface = () => {
                       ...message,
                       onTypingComplete: handleTypingComplete,
                     }}
-                    onLinkClick={handleLinkClick}
+                    onLinkClick={openInPopup}
                   />
                 ))}
                 {isLoading && (
@@ -539,12 +540,12 @@ const ChatInterface = () => {
         </div>
 
         {/* Rich Preview Modal */}
-        {previewUrl && (
+        {/* {previewUrl && (
           <RichPreviewModal
             url={previewUrl}
             onClose={() => setPreviewUrl(null)}
           />
-        )}
+        )} */}
       </div>
     </>
   );
