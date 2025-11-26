@@ -3,7 +3,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Send, MapPin, X, ArrowUpRight } from "lucide-react";
 import Message from "./Message";
 import LoadingIndicator from "./LoadingIndicator";
-import RichPreviewModal from "./RichPreviewModal";
+// import RichPreviewModal from "./RichPreviewModal";
+import openInPopup from "./RichPreviewModal";
+
 
 
 
@@ -227,10 +229,13 @@ const ChatInterface = ({ isWidget = false }) => {
             <>
               {messages.map((message) => (
                 <Message
-                  key={message.id}
-                  message={{ ...message, onTypingComplete: handleTypingComplete }}
-                  onLinkClick={setPreviewUrl}
-                />
+                    key={message.id}
+                    message={{
+                      ...message,
+                      onTypingComplete: handleTypingComplete,
+                    }}
+                    onLinkClick={openInPopup}
+                  />
               ))}
               {isLoading && (
                 <div className="flex justify-center my-8">
