@@ -213,7 +213,7 @@ app.get('/health', (req, res) => {
 });
 
 app.listen(PORT, () => {
-  //console.log(`🚀 API Server running on port: ${PORT}`);
+  console.log(`🚀 API Server running on port: ${PORT}`);
   //console.log(`🔗 Proxying chat requests to: ${N8N_WEBHOOK_URL}`);
   //console.log(`🌐 Widget hosted at: https://fabcity-widget.onrender.com`);
   //console.log(`📍 Geolocation support: ENABLED`);

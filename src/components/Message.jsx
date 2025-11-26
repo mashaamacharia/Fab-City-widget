@@ -94,11 +94,11 @@ const Message = ({ message, onLinkClick }) => {
       transition={{ duration: 0.3 }}
       className={`flex ${isUser ? 'justify-end' : 'justify-start'} mb-6`}
     >
-      <div
+        <div
         className={`max-w-[85%] md:max-w-[75%] px-5 py-4 rounded-2xl ${
-          isUser
-            ? 'bg-fabcity-green text-white shadow-md '
-            : 'bg-[#2C2C2C] text-white border border-gray-700'
+              isUser
+                ? 'bg-gray-800 text-white shadow-md rounded-tl-none'
+                : 'bg-[#FDFBF7] text-black border border-gray-200 rounded-tr-none'
         }`}
       >
         <div className="markdown-content">
@@ -137,7 +137,7 @@ const Message = ({ message, onLinkClick }) => {
           )}
         </div>
 
-        <div className={`text-xs mt-1 ${isUser ? 'text-white/80' : 'text-gray-400'}`}>
+        <div className={`text-xs mt-1 ${isUser ? 'text-white/80' : 'text-gray-500'}`}>
           {new Date(message.timestamp).toLocaleTimeString([], {
             hour: '2-digit',
             minute: '2-digit',

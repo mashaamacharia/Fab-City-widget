@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "build:widget": "vite build --mode lib",
     "preview": "vite preview",
     "server": "node server/index.js",
     "start": "npm run build && node server/index.js"
@@ -27,6 +28,6 @@
     "autoprefixer": "^10.4.16",
     "postcss": "^8.4.31",
     "tailwindcss": "^3.3.5",
-    "vite": "^5.4.21"
+    "vite": "^7.2.4"
   }
 }
