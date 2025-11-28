@@ -3,8 +3,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Send, MapPin, X, ArrowUpRight } from "lucide-react";
 import Message from "./Message";
 import LoadingIndicator from "./LoadingIndicator";
-// import RichPreviewModal from "./RichPreviewModal";
-import openInPopup from "./RichPreviewModal";
+import RichPreviewModal from "./RichPreviewModal";
+// import openInPopup from "./RichPreviewModal";
 
 
 
@@ -17,6 +17,8 @@ const SUGGESTIONS = [
 ];
 
 const ChatInterface = ({ isWidget = false }) => {
+  // const apiUrl = 'http://localhost:3001';
+
   const apiUrl = 'https://fab-city-express-1.onrender.com';
   const logoUrl = "/fab-city-logo.svg";
 
@@ -137,6 +139,10 @@ const ChatInterface = ({ isWidget = false }) => {
       setIsLoading(false);
     }
   };
+  const handleLinkClick = (url) => {
+    setPreviewUrl(url);
+  };
+
 
   const handleKeyPress = (e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSendMessage(); } };
 
@@ -234,7 +240,7 @@ const ChatInterface = ({ isWidget = false }) => {
                       ...message,
                       onTypingComplete: handleTypingComplete,
                     }}
-                    onLinkClick={openInPopup}
+                    onLinkClick={handleLinkClick}
                   />
               ))}
               {isLoading && (
