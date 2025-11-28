@@ -111,9 +111,9 @@ const RichPreviewModal = ({ url, onClose }) => {
       
       case 'pdf': {
         // Use Google Docs viewer for PDFs for better compatibility
-        if (!targetUrl.includes('drive.google.com') && !targetUrl.includes('docs.google.com/viewer')) {
-          return `https://docs.google.com/viewer?url=${encodeURIComponent(targetUrl)}&embedded=true`;
-        }
+        // if (!targetUrl.includes('drive.google.com') && !targetUrl.includes('docs.google.com/viewer')) {
+        //   return `https://docs.google.com/viewer?url=${encodeURIComponent(targetUrl)}&embedded=true`;
+        // }
         return targetUrl;
       }
       
