@@ -771,9 +771,13 @@ const RichPreviewModal = ({ url, onClose }) => {
 
 
     
-    if (!popupRef.current) {
-      console.warn("Popup blocked by browser!");
-    }
+   if (popupRef) {
+    popupRef.focus();
+    
+  } else {
+    console.warn('Popup was blocked');
+    window.open(processedUrl, '_blank', 'noopener,noreferrer');
+  }
   };
 
 
