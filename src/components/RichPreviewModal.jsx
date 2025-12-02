@@ -736,12 +736,23 @@ const RichPreviewModal = ({ url, onClose }) => {
     }
   };
 
-  const popupRef = useRef(null);
+  let popupRef = null;
 
   const openInPopup = () => {
     if (!embedUrl) return;
 
     onClose()
+
+    if (popupRef && !popupRef.closed) {
+    try {
+      popupRef.location.href = embedUrl; // load new resource
+      popupRef.focus();                      // bring window back
+      return;                                // done
+    } catch (err) {
+      // Cross-origin issues → reopen fresh popup
+      popupRef.close();
+    }
+  }
 
 
     const width = isFullScreen ? window.innerWidth : Math.min(window.innerWidth, 1152);
@@ -750,34 +761,30 @@ const RichPreviewModal = ({ url, onClose }) => {
     const top = (window.screen.height - height) / 2.3;
 
     // Check if popup exists and is still open
-    if (popupRef.current) {
-      try {
-        // Try to update location (works only for same-origin)
-        popupRef.current.location.href = embedUrl;
-        popupRef.current.focus();
-        return;
-      } catch (err) {
-        // Cross-origin → reopen
-        popupRef.current.close();
-      }
-    }
+    
 
     // Open new popup
-    popupRef.current = window.open(
+   popupRef = window.open(
       embedUrl,
       "previewPopup",
       `width=${width},height=${height},top=${top},left=${left},resizable=yes,scrollbars=yes`
     );
 
+    if (popupRef) {
+      popupRef.focus();
 
-    
-   if (popupRef) {
-    popupRef.focus();
-    
-  } else {
-    console.warn('Popup was blocked');
-    window.open(processedUrl, '_blank', 'noopener,noreferrer');
-  }
+      // Watch if user closes popup manually
+      const interval = setInterval(() => {
+        if (popupRef.closed) {
+          popupRef = null;
+          clearInterval(interval);
+        }
+      }, 400);
+      
+    } else {
+      console.warn('Popup was blocked');
+      window.open(processedUrl, '_blank', 'noopener,noreferrer');
+    }
   };
 
 

@@ -122,7 +122,7 @@ const Message = ({ message, onLinkClick }) => {
                   {children}
                   {
                     isLoading ? (
-                      <div class="loader"></div>
+                      <div className="loader"></div>
                     ):(
                       <ExternalLink size={12} className="inline" />
 
