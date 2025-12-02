@@ -4,6 +4,7 @@ import { Send, MapPin, X, ArrowUpRight } from "lucide-react";
 import Message from "./Message";
 import LoadingIndicator from "./LoadingIndicator";
 import RichPreviewModal from "./RichPreviewModal";
+import { LoadingProvider } from "../context/loading";
 // import openInPopup from "./RichPreviewModal";
 
 
@@ -17,9 +18,9 @@ const SUGGESTIONS = [
 ];
 
 const ChatInterface = ({ isWidget = false }) => {
-  // const apiUrl = 'http://localhost:3001';
+  const apiUrl = 'http://localhost:3001';
 
-  const apiUrl = 'https://fab-city-express-1.onrender.com';
+  // const apiUrl = 'https://fab-city-express-1.onrender.com';
   const logoUrl = "/fab-city-logo.svg";
 
   const [messages, setMessages] = useState([]);
@@ -148,170 +149,172 @@ const ChatInterface = ({ isWidget = false }) => {
 
   // --- RENDER ---
   return (
-  // MAIN CONTAINER: Cream Background (Off-White)
-  <div className="h-screen w-full bg-[#FDFBF7] flex flex-col font-sans text-black chatbox-chamfer">
-      
-      {/* NAVBAR: Cream background with logo and title on the left */}
-      <div className="relative bg-[#FDFBF7] sticky top-0 z-10 border-b border-black">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 flex items-center justify-center">
-              <img src={logoUrl} alt="Fab City Logo" className="w-10 h-10 object-contain" />
-            </div>
-            <div>
-              <div className="text-sm font-bold text-black">Fab City Assistant</div>
-              <div className="flex items-center gap-2">
-                <span className="w-2 h-2 bg-[#00AA6C] rounded-full animate-pulse"></span>
-                <p className="text-xs font-medium text-gray-600 uppercase tracking-widest">Online</p>
+    // MAIN CONTAINER: Cream Background (Off-White)
+    <LoadingProvider>
+      <div className="h-screen w-full bg-[#FDFBF7] flex flex-col font-sans text-black chatbox-chamfer">
+        
+        {/* NAVBAR: Cream background with logo and title on the left */}
+        <div className="relative bg-[#FDFBF7] sticky top-0 z-10 border-b border-black">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 flex items-center justify-center">
+                <img src={logoUrl} alt="Fab City Logo" className="w-10 h-10 object-contain" />
+              </div>
+              <div>
+                <div className="text-sm font-bold text-black">Fab City Assistant</div>
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 bg-[#00AA6C] rounded-full animate-pulse"></span>
+                  <p className="text-xs font-medium text-gray-600 uppercase tracking-widest">Online</p>
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
 
-      {/* LOCATION BANNER */}
-      <AnimatePresence>
-        {showLocationBanner && locationPermission === "prompt" && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            className="bg-white border-b border-gray-200"
-          >
-            <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
-              <div className="flex items-center gap-2 text-sm text-gray-600">
-                <MapPin className="text-[#E6333A]" size={16} />
-                <span>Locating local resources...</span>
-              </div>
-              <button onClick={() => setShowLocationBanner(false)}>
-                <X size={14} className="text-gray-400 hover:text-black" />
-              </button>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* MESSAGES AREA */}
-      <div className="flex-1 overflow-y-auto chat-scrollbar">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          {messages.length === 0 ? (
+        {/* LOCATION BANNER */}
+        <AnimatePresence>
+          {showLocationBanner && locationPermission === "prompt" && (
             <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="flex flex-col items-center justify-center min-h-[50vh]"
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              className="bg-white border-b border-gray-200"
             >
-              {/* Logo in Black/Grayscale */}
-              <div className="w-20 h-20 mb-6 opacity-100 grayscale hover:grayscale-0 transition-all duration-500">
-                <img src={logoUrl} alt="Logo" className="w-full h-full object-contain" />
-              </div>
-              
-              <h2 className="learning-hub-heading mb-2 text-center tracking-tight">
-                Hello, Welcome to Fab City
-              </h2>
-              <p className="text-gray-500 mb-10 text-center max-w-lg">
-                I can help you navigate the Fab City network, find labs, and understand the challenge.
-              </p>
-              
-              {/* Suggestions with "Hits" of Color via borders */}
-              <div className="w-full max-w-2xl">
-                <h3 className="text-sm font-medium text-gray-600 mb-3">Suggested questions:</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {SUGGESTIONS.map((item, index) => (
-                  <button
-                    key={index}
-                    onClick={() => { setInputValue(item.text); setTimeout(() => handleSendMessage(item.text), 50); }}
-                    className={`group text-left p-0 bg-transparent border-0 shadow-none hover:underline transition-colors`}
-                    aria-label={`Suggestion: ${item.text}`}
-                  >
-                    <div className="flex justify-start items-center">
-                      <span className="text-sm font-medium text-gray-800 group-hover:text-black">{item.text}</span>
-                    </div>
-                  </button>
-                ))}
+              <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
+                <div className="flex items-center gap-2 text-sm text-gray-600">
+                  <MapPin className="text-[#E6333A]" size={16} />
+                  <span>Locating local resources...</span>
                 </div>
+                <button onClick={() => setShowLocationBanner(false)}>
+                  <X size={14} className="text-gray-400 hover:text-black" />
+                </button>
               </div>
             </motion.div>
-          ) : (
-            <>
-              {messages.map((message) => (
-                <Message
-                    key={message.id}
-                    message={{
-                      ...message,
-                      onTypingComplete: handleTypingComplete,
-                    }}
-                    onLinkClick={handleLinkClick}
-                  />
-              ))}
-              {isLoading && (
-                <div className="flex justify-center my-8">
-                  <LoadingIndicator logoUrl={logoUrl} />
-                </div>
-              )}
-              <div ref={messagesEndRef} />
-            </>
           )}
-        </div>
-      </div>
+        </AnimatePresence>
 
-      {/* ERROR MESSAGE */}
-      <AnimatePresence>
-        {error && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="bg-[#E6333A] text-white p-2 text-center text-sm font-medium">
-            {error}
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* INPUT AREA: Minimalist with RGB accents */}
-      <div className="bg-[#FDFBF7] sticky bottom-0 pb-6 pt-2">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="relative bg-white border border-gray-200 focus-within:border-black focus-within:ring-1 focus-within:ring-black/20 transition-all duration-200 shadow-sm flex items-end gap-2 px-4 py-4 rounded-lg">
-            
-              <textarea
-              ref={inputRef}
-              value={inputValue}
-              onChange={(e) => {
-                setInputValue(e.target.value);
-                e.target.style.height = 'auto';
-                e.target.style.height = Math.min(e.target.scrollHeight, 120) + 'px';
-              }}
-              onKeyPress={handleKeyPress}
-              placeholder="Ask me anything about Fab City."
-              className="flex-1 bg-transparent text-black placeholder-gray-500 outline-none resize-none font-normal leading-relaxed"
-              rows="1"
-              style={{ minHeight: "24px", height: "24px", maxHeight: "120px" }}
-            />
-            
-            <AnimatePresence>
-              {(inputValue.trim() || isLoading) && (
-                <motion.button
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.8 }}
-                  onClick={handleSendMessage}
-                  disabled={!inputValue.trim() || isLoading}
-               
-                  aria-label="Send message"
-                  className="bg-[#FDFBF7] hover:bg-[#fbf9f5] text-black p-2 rounded-md transition-colors shadow-sm border border-gray-200"
-                >
-                  <Send size={18} strokeWidth={2} />
-                </motion.button>
-              )}
-            </AnimatePresence>
+        {/* MESSAGES AREA */}
+        <div className="flex-1 overflow-y-auto chat-scrollbar">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            {messages.length === 0 ? (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="flex flex-col items-center justify-center min-h-[50vh]"
+              >
+                {/* Logo in Black/Grayscale */}
+                <div className="w-20 h-20 mb-6 opacity-100 grayscale hover:grayscale-0 transition-all duration-500">
+                  <img src={logoUrl} alt="Logo" className="w-full h-full object-contain" />
+                </div>
+                
+                <h2 className="learning-hub-heading mb-2 text-center tracking-tight">
+                  Hello, Welcome to Fab City
+                </h2>
+                <p className="text-gray-500 mb-10 text-center max-w-lg">
+                  I can help you navigate the Fab City network, find labs, and understand the challenge.
+                </p>
+                
+                {/* Suggestions with "Hits" of Color via borders */}
+                <div className="w-full max-w-2xl">
+                  <h3 className="text-sm font-medium text-gray-600 mb-3">Suggested questions:</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {SUGGESTIONS.map((item, index) => (
+                    <button
+                      key={index}
+                      onClick={() => { setInputValue(item.text); setTimeout(() => handleSendMessage(item.text), 50); }}
+                      className={`group text-left p-0 bg-transparent border-0 shadow-none hover:underline transition-colors`}
+                      aria-label={`Suggestion: ${item.text}`}
+                    >
+                      <div className="flex justify-start items-center">
+                        <span className="text-sm font-medium text-gray-800 group-hover:text-black">{item.text}</span>
+                      </div>
+                    </button>
+                  ))}
+                  </div>
+                </div>
+              </motion.div>
+            ) : (
+              <>
+                {messages.map((message) => (
+                  <Message
+                      key={message.id}
+                      message={{
+                        ...message,
+                        onTypingComplete: handleTypingComplete,
+                      }}
+                      onLinkClick={handleLinkClick}
+                    />
+                ))}
+                {isLoading && (
+                  <div className="flex justify-center my-8">
+                    <LoadingIndicator logoUrl={logoUrl} />
+                  </div>
+                )}
+                <div ref={messagesEndRef} />
+              </>
+            )}
           </div>
-          
-          <div className="flex justify-center mt-3 gap-1">
-             <div className="h-1 w-1 bg-[#E6333A] rounded-full"></div>
-             <div className="h-1 w-1 bg-[#00AA6C] rounded-full"></div>
-             <div className="h-1 w-1 bg-[#1E4796] rounded-full"></div>
-             <span className="text-[10px] text-gray-400 uppercase tracking-widest ml-2">Powered by Fab City AI & ManyMangoes</span>
+        </div>
+
+        {/* ERROR MESSAGE */}
+        <AnimatePresence>
+          {error && (
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="bg-[#E6333A] text-white p-2 text-center text-sm font-medium">
+              {error}
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* INPUT AREA: Minimalist with RGB accents */}
+        <div className="bg-[#FDFBF7] sticky bottom-0 pb-6 pt-2">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="relative bg-white border border-gray-200 focus-within:border-black focus-within:ring-1 focus-within:ring-black/20 transition-all duration-200 shadow-sm flex items-end gap-2 px-4 py-4 rounded-lg">
+              
+                <textarea
+                ref={inputRef}
+                value={inputValue}
+                onChange={(e) => {
+                  setInputValue(e.target.value);
+                  e.target.style.height = 'auto';
+                  e.target.style.height = Math.min(e.target.scrollHeight, 120) + 'px';
+                }}
+                onKeyPress={handleKeyPress}
+                placeholder="Ask me anything about Fab City."
+                className="flex-1 bg-transparent text-black placeholder-gray-500 outline-none resize-none font-normal leading-relaxed"
+                rows="1"
+                style={{ minHeight: "24px", height: "24px", maxHeight: "120px" }}
+              />
+              
+              <AnimatePresence>
+                {(inputValue.trim() || isLoading) && (
+                  <motion.button
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.8 }}
+                    onClick={handleSendMessage}
+                    disabled={!inputValue.trim() || isLoading}
+                
+                    aria-label="Send message"
+                    className="bg-[#FDFBF7] hover:bg-[#fbf9f5] text-black p-2 rounded-md transition-colors shadow-sm border border-gray-200"
+                  >
+                    <Send size={18} strokeWidth={2} />
+                  </motion.button>
+                )}
+              </AnimatePresence>
+            </div>
+            
+            <div className="flex justify-center mt-3 gap-1">
+              <div className="h-1 w-1 bg-[#E6333A] rounded-full"></div>
+              <div className="h-1 w-1 bg-[#00AA6C] rounded-full"></div>
+              <div className="h-1 w-1 bg-[#1E4796] rounded-full"></div>
+              <span className="text-[10px] text-gray-400 uppercase tracking-widest ml-2">Powered by Fab City AI & ManyMangoes</span>
+            </div>
           </div>
         </div>
-      </div>
 
-      {previewUrl && <RichPreviewModal url={previewUrl} onClose={() => setPreviewUrl(null)} />}
-    </div>
+        {previewUrl && <RichPreviewModal url={previewUrl} onClose={() => setPreviewUrl(null)} />}
+      </div>
+    </LoadingProvider>
   );
 };
 

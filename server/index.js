@@ -205,6 +205,158 @@ app.post('/api/logs', express.json(), async (req, res) => {
 });
 
 
+app.get('/check-embed', async (req, res) => {
+  const targetUrl = req.query.url;
+  const type = req.query.type;
+  if (!targetUrl) {
+    return res.status(400).json({ error: 'Missing url parameter' });
+  }
+
+  try {
+    // -------------------------
+    // 1. HEAD Request
+    // -------------------------
+    const head = await fetch(targetUrl, { method: 'HEAD' });
+
+    const headers = head.headers;
+    const xFrame = headers.get("x-frame-options");
+    const csp = headers.get("content-security-policy");
+    const contentType = headers.get("content-type") || "";
+    const contentLen = headers.get("content-length");
+    const fileSize = contentLen ? parseInt(contentLen, 10) : null;
+
+    // -------------------------
+    // 2. Check iframe blocking
+    // -------------------------
+    let blocked = false;
+    const allowedTypes = ['googledrive', 'youtube']
+    const blockedByXFrame = xFrame && ["deny", "sameorigin"].includes(xFrame.toLowerCase());
+    const blockedByCSP = csp && csp.toLowerCase().includes("frame-ancestors");
+
+    if ((blockedByXFrame || blockedByCSP) && !allowedTypes.includes(type)) {
+      blocked = true;
+    }
+
+    // File size rule > 25MB
+    if ((type === 'pdf' || type === 'office') && fileSize && fileSize > 25 * 1024 * 1024) {
+      blocked = true;
+    }
+
+    // -------------------------
+    // 4. Server-side processUrl()
+    // -------------------------
+    let embedUrl = targetUrl;
+
+    switch (type) {
+
+      case "youtube": {
+        let videoId = "";
+        if (targetUrl.includes("youtube.com/watch")) {
+          const qs = new URLSearchParams(targetUrl.split('?')[1]);
+          videoId = qs.get("v");
+        } else if (targetUrl.includes("youtu.be/")) {
+          videoId = targetUrl.split("youtu.be/")[1].split("?")[0].split("/")[0];
+        }
+        embedUrl = videoId
+          ? `https://www.youtube.com/embed/${videoId}?autoplay=0&rel=0`
+          : targetUrl;
+        break;
+      }
+
+      case "vimeo": {
+        const match = targetUrl.match(/vimeo\.com\/(\d+)/);
+        embedUrl = match
+          ? `https://player.vimeo.com/video/${match[1]}`
+          : targetUrl;
+        break;
+      }
+
+      case "googledrive": {
+        let fileId = null;
+
+        // /file/d/{id}/
+        const m1 = targetUrl.match(/\/file\/d\/([^\/\?]+)/);
+        if (m1) fileId = m1[1];
+
+        // ?id={id}
+        if (!fileId) {
+          const m2 = targetUrl.match(/[?&]id=([^&]+)/);
+          if (m2) fileId = m2[1];
+        }
+
+        // /d/{id}/
+        if (!fileId) {
+          const m3 = targetUrl.match(/\/d\/([^\/\?]+)/);
+          if (m3) fileId = m3[1];
+        }
+
+        embedUrl = fileId
+          ? `https://drive.google.com/file/d/${fileId}/preview`
+          : targetUrl;
+        break;
+      }
+
+      case "pdf": {
+        if (
+          fileSize !== null && 
+          fileSize <= 25 * 1024 * 1024 && 
+          !targetUrl.includes('drive.google.com') && 
+          !targetUrl.includes('docs.google.com/viewer')
+        ) {
+          embedUrl = `https://docs.google.com/viewer?url=${encodeURIComponent(targetUrl)}&embedded=true`;
+        } else {
+          embedUrl = targetUrl;
+        }
+        break;
+      }
+
+      case "office": {
+        if (fileSize !== null && fileSize <= 25 * 1024 * 1024) {
+          embedUrl = `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(targetUrl)}`;
+        } else {
+          embedUrl = targetUrl;
+        }
+        break;
+      }
+
+
+      case "dropbox": {
+        let processed = targetUrl.replace("www.dropbox.com", "dl.dropboxusercontent.com");
+        processed = processed.replace("?dl=0", "").replace("?dl=1", "");
+        if (!processed.includes("dl=1") && !processed.includes("raw=1")) {
+          processed += (processed.includes("?") ? "&" : "?") + "raw=1";
+        }
+        embedUrl = processed;
+        break;
+      }
+
+      default:
+        embedUrl = targetUrl;
+    }
+
+
+    // -------------------------
+    // 5. Return to frontend
+    // -------------------------
+    return res.json({
+      blocked,
+      type,
+      embedUrl,
+      fileSize,
+      contentType
+    });
+
+  } catch (err) {
+    return res.status(500).json({
+      error: "Failed to process embed check",
+      details: err.message
+    });
+  }
+});
+
+
+
+
 // Health check endpoint
 app.get('/health', (req, res) => {
   res.status(200).json({

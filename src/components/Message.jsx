@@ -3,12 +3,13 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { ExternalLink } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { useLoading } from '../context/loading';
 
 const Message = ({ message, onLinkClick }) => {
   const isUser = message.sender === 'user';
   const [displayedText, setDisplayedText] = useState('');
   const [isTyping, setIsTyping] = useState(!isUser && !message.isTyped);
-
+  const {isLoading} = useLoading()
   // 🔧 Typing behavior configuration
   const BASE_SPEED = 3;           // Lower = faster typing (e.g., 5 = very fast, 20 = slower)
   const RANDOM_VARIATION = 4;     // Random delay variation for natural typing
@@ -119,7 +120,14 @@ const Message = ({ message, onLinkClick }) => {
                   {...props}
                 >
                   {children}
-                  <ExternalLink size={12} className="inline" />
+                  {
+                    isLoading ? (
+                      <div class="loader"></div>
+                    ):(
+                      <ExternalLink size={12} className="inline" />
+
+                    )
+                  }
                 </button>
               ),
             }}
