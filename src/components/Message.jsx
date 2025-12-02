@@ -5,6 +5,7 @@ import { ExternalLink } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useLoading } from '../context/loading';
 
+
 const Message = ({ message, onLinkClick }) => {
   const isUser = message.sender === 'user';
   const [displayedText, setDisplayedText] = useState('');
