@@ -766,7 +766,7 @@ const RichPreviewModal = ({ url, onClose }) => {
     popupRef.current = window.open(
       embedUrl,
       "previewPopup",
-      `popup=yes,width=${width},height=${height},top=${top},left=${left},resizable=yes,scrollbars=yes`
+      `width=${width},height=${height},top=${top},left=${left},resizable=yes,scrollbars=yes`
     );
 
 
