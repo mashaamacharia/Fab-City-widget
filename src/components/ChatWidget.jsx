@@ -515,27 +515,27 @@ const ChatInterface = ({ isWidget = false, handleCitationClick }) => {
         )}
       </AnimatePresence>
 
-      {/* LOCATION BANNER */}
-      <AnimatePresence>
-        {showLocationBanner && locationPermission === "prompt" && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            className="bg-white border-b border-gray-200"
-          >
-            <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
-              <div className="flex items-center gap-2 text-sm text-gray-600">
-                <MapPin className="text-[#E6333A]" size={16} />
-                <span>Locating local resources...</span>
+        {/* LOCATION BANNER */}
+        <AnimatePresence>
+          {showLocationBanner && locationPermission === "prompt" && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              className="bg-white border-b border-gray-200"
+            >
+              <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
+                <div className="flex items-center gap-2 text-sm text-gray-600">
+                  <MapPin className="text-[#E6333A]" size={16} />
+                  <span>Locating local resources...</span>
+                </div>
+                <button onClick={() => setShowLocationBanner(false)}>
+                  <X size={14} className="text-gray-400 hover:text-black" />
+                </button>
               </div>
-              <button onClick={() => setShowLocationBanner(false)}>
-                <X size={14} className="text-gray-400 hover:text-black" />
-              </button>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
       {/* MESSAGES AREA with Pull to Refresh */}
       <div 
@@ -803,8 +803,9 @@ const ChatInterface = ({ isWidget = false, handleCitationClick }) => {
         </div>
       </div>
 
-      {previewUrl && <RichPreviewModal url={previewUrl} onClose={() => setPreviewUrl(null)} />}
-    </div>
+        {previewUrl && <RichPreviewModal url={previewUrl} onClose={() => setPreviewUrl(null)} />}
+      </div>
+    </LoadingProvider>
   );
 };
 
