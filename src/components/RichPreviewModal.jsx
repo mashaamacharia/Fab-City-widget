@@ -529,7 +529,18 @@ const RichPreviewModal = ({ url, onClose }) => {
                   )}
                 </button>
               )}
-              {(fileType === 'googledrive' || fileType === 'image' || fileType === 'video') && (
+              {fileType === 'googledrive' && (
+                <a
+                  href={embedUrl || url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-white hover:text-white/80 p-2 rounded-lg hover:bg-white/20 transition-colors"
+                  title="Open in new tab"
+                >
+                  <ExternalLink size={18} />
+                </a>
+              )}
+              {(fileType === 'image' || fileType === 'video') && (
                 <a
                   href={url}
                   download

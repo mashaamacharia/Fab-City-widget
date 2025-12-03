@@ -95,14 +95,17 @@ const extractGoogleDocId = (url, type) => {
  */
 const transformGoogleUrl = (url) => {
   try {
-    const urlObj = new URL(url);
+    // Replace HTML-encoded ampersands to ensure URLSearchParams can parse correctly
+    const normalizedUrl = url ? url.replace(/&amp;/g, '&') : url;
+    
+    const urlObj = new URL(normalizedUrl);
     const hostname = urlObj.hostname.toLowerCase();
     const pathname = urlObj.pathname;
     const searchParams = urlObj.searchParams;
     
     // Google Docs - check first as it's more specific
     if (hostname.includes('docs.google.com') && pathname.includes('/document/d/')) {
-      const docId = extractGoogleDocId(url, 'document');
+      const docId = extractGoogleDocId(normalizedUrl, 'document');
       if (docId) {
         // Always normalize to the Drive preview endpoint for consistency
         return `https://drive.google.com/file/d/${docId}/preview`;
@@ -111,7 +114,7 @@ const transformGoogleUrl = (url) => {
     
     // Google Sheets
     if (hostname.includes('docs.google.com') && pathname.includes('/spreadsheets/d/')) {
-      const sheetId = extractGoogleDocId(url, 'spreadsheet');
+      const sheetId = extractGoogleDocId(normalizedUrl, 'spreadsheet');
       if (sheetId) {
         return `https://drive.google.com/file/d/${sheetId}/preview`;
       }
@@ -119,7 +122,7 @@ const transformGoogleUrl = (url) => {
     
     // Google Slides
     if (hostname.includes('docs.google.com') && pathname.includes('/presentation/d/')) {
-      const slideId = extractGoogleDocId(url, 'presentation');
+      const slideId = extractGoogleDocId(normalizedUrl, 'presentation');
       if (slideId) {
         return `https://drive.google.com/file/d/${slideId}/preview`;
       }
@@ -127,8 +130,13 @@ const transformGoogleUrl = (url) => {
     
     // Google Drive files - handle all formats
     if (hostname.includes('drive.google.com')) {
-      // Try to extract file ID from any format
-      const fileId = extractGoogleDriveFileId(url);
+      // Always prefer id= query parameters (handles /uc, /open, etc.)
+      let fileId = searchParams.get('id');
+      
+      // Try to extract file ID from any format if not present in query params
+      if (!fileId) {
+        fileId = extractGoogleDriveFileId(normalizedUrl);
+      }
       
       if (fileId) {
         // Always convert to preview format for embedding
@@ -139,7 +147,7 @@ const transformGoogleUrl = (url) => {
       
       // Fallback: if URL contains /view, /edit, or /share, replace with /preview
       if (pathname.includes('/view') || pathname.includes('/edit') || pathname.includes('/share')) {
-        const cleanUrl = url.replace(/\/(view|edit|share)(\/|$|\?)/, '/preview$2');
+        const cleanUrl = normalizedUrl.replace(/\/(view|edit|share)(\/|$|\?)/, '/preview$2');
         // Remove query parameters that might prevent embedding
         try {
           const cleanUrlObj = new URL(cleanUrl);
@@ -154,7 +162,7 @@ const transformGoogleUrl = (url) => {
       
       // Handle /open format specifically
       if (pathname === '/open' || pathname.includes('/open')) {
-        const fileId = searchParams.get('id') || extractGoogleDriveFileId(url);
+        const fileId = searchParams.get('id') || extractGoogleDriveFileId(normalizedUrl);
         if (fileId) {
           return `https://drive.google.com/file/d/${fileId}/preview`;
         }
@@ -163,7 +171,7 @@ const transformGoogleUrl = (url) => {
     
     // For docs.google.com with /open format
     if (hostname.includes('docs.google.com')) {
-      const fileId = searchParams.get('id') || extractGoogleDriveFileId(url);
+      const fileId = searchParams.get('id') || extractGoogleDriveFileId(normalizedUrl);
       if (fileId) {
         return `https://drive.google.com/file/d/${fileId}/preview`;
       }
@@ -172,20 +180,20 @@ const transformGoogleUrl = (url) => {
     // If URL already contains /preview, return as-is (but clean up query params)
     if (pathname.includes('/preview')) {
       // Remove unnecessary query parameters that might interfere with embedding
-      const cleanUrl = new URL(url);
+      const cleanUrl = new URL(normalizedUrl);
       cleanUrl.searchParams.delete('usp');
       cleanUrl.searchParams.delete('usp=sharing');
       return cleanUrl.toString();
     }
     
     // Last resort: try to find any file ID pattern and convert
-    const anyFileId = extractGoogleDriveFileId(url);
+    const anyFileId = extractGoogleDriveFileId(normalizedUrl);
     if (anyFileId) {
       return `https://drive.google.com/file/d/${anyFileId}/preview`;
     }
     
     // If no transformation possible, return original
-    return url;
+    return normalizedUrl;
   } catch (e) {
     console.warn('Error transforming Google URL:', e, url);
     return url;

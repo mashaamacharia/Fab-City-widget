@@ -116,14 +116,6 @@ const SmartResourceViewer = ({
     };
   }, [transformedUrl, isLoading]);
 
-  // Open resource in new tab
-  const handleOpenInNewTab = () => {
-    const urlToOpen = originalUrl || url;
-    if (urlToOpen) {
-      window.open(urlToOpen, '_blank', 'noopener,noreferrer');
-    }
-  };
-
   if (!url) {
     return (
       <div className="w-full h-full flex items-center justify-center text-gray-400 bg-gray-50">
@@ -136,7 +128,9 @@ const SmartResourceViewer = ({
   }
 
   const isPdfFile = isPdf(originalUrl || url);
-  const urlToOpen = originalUrl || url;
+  // Prefer the transformed (embed/preview) URL for opening in a new tab,
+  // so Google Drive and similar resources don't trigger downloads.
+  const externalUrl = transformedUrl || originalUrl || url;
 
   return (
     <div className="w-full h-full flex flex-col bg-white relative">
@@ -152,15 +146,19 @@ const SmartResourceViewer = ({
           </span>
         </div>
         <div className="flex items-center gap-2 flex-shrink-0">
-          <button
-            onClick={handleOpenInNewTab}
-            className="px-3 py-1.5 text-sm font-medium text-gray-700 bg-white hover:bg-gray-100 rounded-md border border-gray-300 transition-all duration-200 flex items-center gap-1.5 shadow-sm hover:shadow"
-            title="Open in New Tab"
-          >
-            <ExternalLink size={14} />
-            <span className="hidden sm:inline">Open in New Tab</span>
-            <span className="sm:hidden">Open</span>
-          </button>
+          {externalUrl && (
+            <a
+              href={externalUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-3 py-1.5 text-sm font-medium text-gray-700 bg-white hover:bg-gray-100 rounded-md border border-gray-300 transition-all duration-200 flex items-center gap-1.5 shadow-sm hover:shadow"
+              title="Open in New Tab"
+            >
+              <ExternalLink size={14} />
+              <span className="hidden sm:inline">Open in New Tab</span>
+              <span className="sm:hidden">Open</span>
+            </a>
+          )}
         </div>
       </div>
 
@@ -195,13 +193,17 @@ const SmartResourceViewer = ({
               <div className="w-full h-full flex items-center justify-center bg-gray-50">
                 <div className="text-center p-6">
                   <p className="text-gray-600 mb-4">Unable to display PDF in viewer.</p>
-                  <button
-                    onClick={handleOpenInNewTab}
-                    className="px-4 py-2 bg-fabcity-blue text-white rounded-lg hover:bg-blue-700 transition-colors font-medium flex items-center gap-2 mx-auto"
-                  >
-                    <ExternalLink size={16} />
-                    Open PDF in New Tab
-                  </button>
+              {externalUrl && (
+                    <a
+                  href={externalUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="px-4 py-2 bg-fabcity-blue text-white rounded-lg hover:bg-blue-700 transition-colors font-medium flex items-center gap-2 mx-auto"
+                    >
+                      <ExternalLink size={16} />
+                      Open PDF in New Tab
+                    </a>
+                  )}
                 </div>
               </div>
             </object>
@@ -230,16 +232,20 @@ const SmartResourceViewer = ({
         </div>
 
         {/* Trouble Loading Overlay */}
-        <div className="absolute bottom-4 right-4 z-30">
-          <button
-            onClick={handleOpenInNewTab}
-            className="px-3 py-2 text-xs font-medium text-white bg-gray-800 hover:bg-gray-900 rounded-md shadow-lg transition-all duration-200 flex items-center gap-1.5 opacity-90 hover:opacity-100"
-            title="Trouble loading? Open in new tab"
-          >
-            <span>Trouble loading?</span>
-            <ExternalLink size={12} />
-          </button>
-        </div>
+        {externalUrl && (
+          <div className="absolute bottom-4 right-4 z-30">
+            <a
+              href={externalUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-3 py-2 text-xs font-medium text-white bg-gray-800 hover:bg-gray-900 rounded-md shadow-lg transition-all duration-200 flex items-center gap-1.5 opacity-90 hover:opacity-100"
+              title="Trouble loading? Open in new tab"
+            >
+              <span>Trouble loading?</span>
+              <ExternalLink size={12} />
+            </a>
+          </div>
+        )}
       </div>
     </div>
   );
