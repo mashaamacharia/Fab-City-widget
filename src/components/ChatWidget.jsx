@@ -805,7 +805,7 @@ const apiUrl = 'https://fab-city-express-1.onrender.com';
 
         {previewUrl && <RichPreviewModal url={previewUrl} onClose={() => setPreviewUrl(null)} />}
       </div>
-    </LoadingProvider>
+    // </LoadingProvider>
   );
 };
 
