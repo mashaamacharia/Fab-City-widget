@@ -18,9 +18,9 @@ const SUGGESTIONS = [
 ];
 
 const ChatInterface = ({ isWidget = false, handleCitationClick }) => {
-  // const apiUrl = 'http://localhost:3001';
+  const apiUrl = 'http://localhost:3001';
 
-const apiUrl = 'https://fab-city-express-1.onrender.com';  
+// const apiUrl = 'https://fab-city-express-1.onrender.com';  
   const logoUrl = "/fab-city-logo.svg";
 
   const [messages, setMessages] = useState([]);
@@ -45,19 +45,35 @@ const apiUrl = 'https://fab-city-express-1.onrender.com';
   const errorTimeoutRef = useRef(null);
   const messagesContainerRef = useRef(null);
   const pullStartRef = useRef({ y: 0, scrollTop: 0 });
+  const [refresh, setRefresh] = useState(false)
 
   // Load conversations from localStorage
+  // Load conversations from localStorage (ONCE)
   useEffect(() => {
+    console.log('fired')
     const savedConversations = localStorage.getItem('fabcity_conversations');
+
     if (savedConversations) {
       try {
-        const parsed = JSON.parse(savedConversations);
+        let parsed = JSON.parse(savedConversations) || [];
+        console.log(parsed)
+
+        // FIFO: keep only the last 5 (oldest removed)
+        if (parsed.length > 5) {
+          parsed = parsed.slice(0, 5);  // if your newest is index 0
+        }
+
         setConversations(parsed);
+
+        // Also rewrite fixed list back to localStorage
+        localStorage.setItem('fabcity_conversations', JSON.stringify(parsed));
+
       } catch (e) {
         console.error('Failed to load conversations:', e);
       }
     }
-  }, []);
+  }, [refresh]); // <-- MUST be empty
+
 
   // Load current session messages from localStorage
   useEffect(() => {
@@ -295,6 +311,8 @@ const apiUrl = 'https://fab-city-express-1.onrender.com';
       };
       const updatedConversations = [conversation, ...conversations].slice(0, 50); // Keep last 50
       setConversations(updatedConversations);
+
+
       localStorage.setItem('fabcity_conversations', JSON.stringify(updatedConversations));
     }
     
@@ -305,6 +323,7 @@ const apiUrl = 'https://fab-city-express-1.onrender.com';
     setSessionId(newSessionId);
     localStorage.removeItem('fabcity_current_messages');
     localStorage.setItem('fabcity_current_session', newSessionId);
+    setRefresh(prev=>!prev)
   };
 
   const handleLoadConversation = (conversation) => {
@@ -419,7 +438,10 @@ const apiUrl = 'https://fab-city-express-1.onrender.com';
             </div>
             <div className="flex items-center gap-1 sm:gap-2">
               <button
-                onClick={() => setShowHistory(!showHistory)}
+                onClick={() => {
+                  setShowHistory(!showHistory)
+                  handleNewConversation()
+                }}
                 className="p-2 sm:p-2 hover:bg-gray-100 active:bg-gray-200 rounded-lg transition-colors touch-manipulation"
                 title="Conversation History"
                 style={{ minWidth: '44px', minHeight: '44px' }}
