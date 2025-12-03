@@ -300,7 +300,7 @@ const apiUrl = 'https://fab-city-express-1.onrender.com';
     setMessages((prev) => prev.filter(msg => msg.id !== messageId));
   };
 
-  const handleNewConversation = () => {
+  const handleNewConversation = (fromWhere) => {
     if (messages.length > 0) {
       // Save current conversation to history
       const conversation = {
@@ -315,14 +315,17 @@ const apiUrl = 'https://fab-city-express-1.onrender.com';
 
       localStorage.setItem('fabcity_conversations', JSON.stringify(updatedConversations));
     }
-    
-    // Clear current conversation
-    setMessages([]);
-    setInputValue("");
-    const newSessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    setSessionId(newSessionId);
-    localStorage.removeItem('fabcity_current_messages');
-    localStorage.setItem('fabcity_current_session', newSessionId);
+
+    if(fromWhere === 'add'){
+      // Clear current conversation
+      setMessages([]);
+      setInputValue("");
+      const newSessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      setSessionId(newSessionId);
+      localStorage.removeItem('fabcity_current_messages');
+      localStorage.setItem('fabcity_current_session', newSessionId);
+
+    }
     setRefresh(prev=>!prev)
   };
 
@@ -440,7 +443,7 @@ const apiUrl = 'https://fab-city-express-1.onrender.com';
               <button
                 onClick={() => {
                   setShowHistory(!showHistory)
-                  handleNewConversation()
+                  handleNewConversation('history')
                 }}
                 className="p-2 sm:p-2 hover:bg-gray-100 active:bg-gray-200 rounded-lg transition-colors touch-manipulation"
                 title="Conversation History"
@@ -449,7 +452,7 @@ const apiUrl = 'https://fab-city-express-1.onrender.com';
                 <History size={isMobile ? 20 : 18} className="text-gray-700" />
               </button>
               <button
-                onClick={handleNewConversation}
+                onClick={handleNewConversation('add')}
                 className="p-2 sm:p-2 hover:bg-gray-100 active:bg-gray-200 rounded-lg transition-colors touch-manipulation"
                 title="New Conversation"
                 style={{ minWidth: '44px', minHeight: '44px' }}
