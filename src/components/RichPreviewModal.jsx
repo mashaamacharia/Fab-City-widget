@@ -1,6 +1,7 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Download, Maximize2, Minimize2, ExternalLink, AlertCircle, Globe, FileText, FileImage, Film, Play } from 'lucide-react';
 import { useEffect, useState, useCallback, useRef } from 'react';
+import { transformUrlForEmbedding } from '../utils/urlTransform';
 
 const RichPreviewModal = ({ url, onClose }) => {
   const [fileType, setFileType] = useState('loading');
@@ -40,6 +41,13 @@ const RichPreviewModal = ({ url, onClose }) => {
       }
       return 'googledrive';
     }
+    if (
+      targetUrl.includes('docs.google.com/document') ||
+      targetUrl.includes('docs.google.com/spreadsheets') ||
+      targetUrl.includes('docs.google.com/presentation')
+    ) {
+      return 'googledrive';
+    }
     if (targetUrl.includes('dropbox.com')) {
       if (urlLower.includes('.pdf') || urlLower.endsWith('.pdf')) return 'pdf';
       if (/\.(jpg|jpeg|png|gif|webp|svg)/i.test(urlLower)) return 'image';
@@ -76,37 +84,8 @@ const RichPreviewModal = ({ url, onClose }) => {
       }
       
       case 'googledrive': {
-        // Handle different Google Drive URL formats
-        let fileId = null;
-        
-        // Format 1: /file/d/{id}/
-        const fileIdMatch = targetUrl.match(/\/file\/d\/([^\/\?]+)/);
-        if (fileIdMatch) {
-          fileId = fileIdMatch[1];
-        }
-        
-        // Format 2: ?id={id} (download links)
-        if (!fileId) {
-          const idMatch = targetUrl.match(/[?&]id=([^&]+)/);
-          if (idMatch) {
-            fileId = idMatch[1];
-          }
-        }
-        
-        // Format 3: /d/{id}/
-        if (!fileId) {
-          const dMatch = targetUrl.match(/\/d\/([^\/\?]+)/);
-          if (dMatch) {
-            fileId = dMatch[1];
-          }
-        }
-        
-        // Convert to preview URL instead of download
-        if (fileId) {
-          return `https://drive.google.com/file/d/${fileId}/preview`;
-        }
-        
-        return targetUrl;
+        const transformed = transformUrlForEmbedding(targetUrl);
+        return transformed || targetUrl;
       }
       
       case 'pdf': {

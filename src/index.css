@@ -10,6 +10,12 @@
 }
 
 
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
 body {
  font-family: 'Manrope', sans-serif;
   -webkit-font-smoothing: antialiased;
@@ -93,7 +99,7 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Chat input tweaks */
+/* Chat input tweaks - Gemini Style */
 .chat-input-textarea {
   overflow: hidden; /* avoid inner scrollbar */
   resize: none; /* ensure no manual resize handle */
@@ -101,6 +107,48 @@ body {
 }
 .chat-input-textarea::-webkit-scrollbar {
   display: none; /* webkit */
+}
+
+/* Gemini-style textarea - smooth auto-resize, no visible scrollbar */
+textarea {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+
+textarea::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+
+/* Smooth textarea resize */
+textarea {
+  transition: height 0.1s ease-out;
+}
+
+/* Mobile Gesture Improvements */
+.touch-manipulation {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Better touch targets for mobile */
+@media (max-width: 768px) {
+  button, a {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
+/* Prevent text selection during swipe */
+.swipeable {
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
+/* Smooth pull to refresh */
+.pull-refresh-container {
+  overscroll-behavior-y: contain;
 }
 
 /* FORCE OVERRIDE for Chat Bubbles to match the Black/Cream Theme */
