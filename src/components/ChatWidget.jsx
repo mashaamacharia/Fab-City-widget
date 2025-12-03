@@ -12,15 +12,15 @@ import { prefetchMessageUrls } from "../utils/resourcePrefetch";
 
 const SUGGESTIONS = [
   { text: "What is Fab City and how does it work?" },
-  { text: "How can I get involved in local Fab City initiatives?"},
+  { text: "How can I get involved in local Fab City initiatives?" },
   { text: "What are the Fab City initiatives" },
-  { text: "What are the key principles of Fab City?"},
+  { text: "What are the key principles of Fab City?" },
 ];
 
 const ChatInterface = ({ isWidget = false, handleCitationClick }) => {
   // const apiUrl = 'http://localhost:3001';
 
-const apiUrl = 'https://fab-city-express-1.onrender.com';  
+  const apiUrl = 'https://fab-city-express-1.onrender.com';
   const logoUrl = "/fab-city-logo.svg";
 
   const [messages, setMessages] = useState([]);
@@ -197,7 +197,7 @@ const apiUrl = 'https://fab-city-express-1.onrender.com';
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
-  
+
   useEffect(() => {
     if (error) {
       clearTimeout(errorTimeoutRef.current);
@@ -251,10 +251,10 @@ const apiUrl = 'https://fab-city-express-1.onrender.com';
       if (!response.ok) throw new Error("Failed to get response");
       const data = await response.json();
       let responseText = Array.isArray(data) && data.length > 0 ? (data[0].output || data[0].response || data[0].message) : (data.response || data.message || data.output || "");
-      
+
       const aiMessage = { id: Date.now() + 1, text: responseText || "Sorry, I couldn't process that.", sender: "ai", timestamp: new Date(), isTyped: false };
       setMessages((prev) => [...prev, aiMessage]);
-      
+
       // Prefetch all URLs in the AI response for faster loading when user clicks citations
       if (responseText) {
         // Use setTimeout to avoid blocking the UI update
@@ -316,7 +316,7 @@ const apiUrl = 'https://fab-city-express-1.onrender.com';
       localStorage.setItem('fabcity_conversations', JSON.stringify(updatedConversations));
     }
 
-    if(fromWhere === 'add'){
+    if (fromWhere === 'add') {
       // Clear current conversation
       setMessages([]);
       setInputValue("");
@@ -326,7 +326,7 @@ const apiUrl = 'https://fab-city-express-1.onrender.com';
       localStorage.setItem('fabcity_current_session', newSessionId);
 
     }
-    setRefresh(prev=>!prev)
+    setRefresh(prev => !prev)
   };
 
   const handleLoadConversation = (conversation) => {
@@ -343,7 +343,7 @@ const apiUrl = 'https://fab-city-express-1.onrender.com';
       const time = new Date(msg.timestamp).toLocaleString();
       return `[${time}] ${sender}: ${msg.text}`;
     }).join('\n\n');
-    
+
     const blob = new Blob([conversationText], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -361,11 +361,11 @@ const apiUrl = 'https://fab-city-express-1.onrender.com';
       timestamp: new Date().toISOString(),
       sessionId: sessionId
     };
-    
+
     const shareText = `Fab City Conversation\n\n${messages.map(msg => {
       return `${msg.sender === 'user' ? 'You' : 'Assistant'}: ${msg.text}`;
     }).join('\n\n')}`;
-    
+
     if (navigator.share) {
       try {
         await navigator.share({
@@ -420,9 +420,9 @@ const apiUrl = 'https://fab-city-express-1.onrender.com';
 
   // --- RENDER ---
   return (
-  // MAIN CONTAINER: Cream Background (Off-White)
-  <div className="h-full w-full bg-[#FDFBF7] flex flex-col font-sans text-black chatbox-chamfer">
-      
+    // MAIN CONTAINER: Cream Background (Off-White)
+    <div className="h-full w-full bg-[#FDFBF7] flex flex-col font-sans text-black chatbox-chamfer">
+
       {/* NAVBAR: Cream background with logo and title on the left */}
       <div className="relative bg-[#FDFBF7] sticky top-0 z-10 border-b border-black">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
@@ -442,8 +442,8 @@ const apiUrl = 'https://fab-city-express-1.onrender.com';
             <div className="flex items-center gap-1 sm:gap-2">
               <button
                 onClick={() => {
-                  setShowHistory(!showHistory)
-                  handleNewConversation('history')
+                  setShowHistory(!showHistory);
+                  handleNewConversation('history');
                 }}
                 className="p-2 sm:p-2 hover:bg-gray-100 active:bg-gray-200 rounded-lg transition-colors touch-manipulation"
                 title="Conversation History"
@@ -451,14 +451,16 @@ const apiUrl = 'https://fab-city-express-1.onrender.com';
               >
                 <History size={isMobile ? 20 : 18} className="text-gray-700" />
               </button>
+
               <button
-                onClick={handleNewConversation('add')}
+                onClick={() => handleNewConversation('add')}
                 className="p-2 sm:p-2 hover:bg-gray-100 active:bg-gray-200 rounded-lg transition-colors touch-manipulation"
                 title="New Conversation"
                 style={{ minWidth: '44px', minHeight: '44px' }}
               >
                 <Plus size={isMobile ? 20 : 18} className="text-gray-700" />
               </button>
+
               {messages.length > 0 && (
                 <>
                   <button
@@ -540,30 +542,30 @@ const apiUrl = 'https://fab-city-express-1.onrender.com';
         )}
       </AnimatePresence>
 
-        {/* LOCATION BANNER */}
-        <AnimatePresence>
-          {showLocationBanner && locationPermission === "prompt" && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              exit={{ opacity: 0, height: 0 }}
-              className="bg-white border-b border-gray-200"
-            >
-              <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
-                <div className="flex items-center gap-2 text-sm text-gray-600">
-                  <MapPin className="text-[#E6333A]" size={16} />
-                  <span>Locating local resources...</span>
-                </div>
-                <button onClick={() => setShowLocationBanner(false)}>
-                  <X size={14} className="text-gray-400 hover:text-black" />
-                </button>
+      {/* LOCATION BANNER */}
+      <AnimatePresence>
+        {showLocationBanner && locationPermission === "prompt" && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            className="bg-white border-b border-gray-200"
+          >
+            <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
+              <div className="flex items-center gap-2 text-sm text-gray-600">
+                <MapPin className="text-[#E6333A]" size={16} />
+                <span>Locating local resources...</span>
               </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+              <button onClick={() => setShowLocationBanner(false)}>
+                <X size={14} className="text-gray-400 hover:text-black" />
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* MESSAGES AREA with Pull to Refresh */}
-      <div 
+      <div
         ref={messagesContainerRef}
         className="flex-1 overflow-y-auto chat-scrollbar relative pull-refresh-container"
         onTouchStart={(e) => {
@@ -580,7 +582,7 @@ const apiUrl = 'https://fab-city-express-1.onrender.com';
           const container = messagesContainerRef.current;
           const touch = e.touches[0];
           const deltaY = touch.clientY - pullStartRef.current.y;
-          
+
           // Only trigger if at top of scroll and pulling down
           if (container.scrollTop === 0 && deltaY > 0) {
             e.preventDefault();
@@ -614,11 +616,10 @@ const apiUrl = 'https://fab-city-express-1.onrender.com';
               exit={{ opacity: 0, y: -50 }}
               className="absolute top-0 left-0 right-0 flex items-center justify-center z-10"
             >
-              <div className={`flex flex-col items-center gap-2 px-4 py-2 rounded-full ${
-                pullToRefresh.canRefresh ? 'bg-fabcity-green text-white' : 'bg-gray-200 text-gray-600'
-              }`}>
-                <RefreshCw 
-                  size={20} 
+              <div className={`flex flex-col items-center gap-2 px-4 py-2 rounded-full ${pullToRefresh.canRefresh ? 'bg-fabcity-green text-white' : 'bg-gray-200 text-gray-600'
+                }`}>
+                <RefreshCw
+                  size={20}
                   className={pullToRefresh.canRefresh ? 'animate-spin' : ''}
                 />
                 <span className="text-xs font-medium">
@@ -640,30 +641,30 @@ const apiUrl = 'https://fab-city-express-1.onrender.com';
               <div className="w-20 h-20 mb-6 opacity-100 grayscale hover:grayscale-0 transition-all duration-500">
                 <img src={logoUrl} alt="Logo" className="w-full h-full object-contain" />
               </div>
-              
+
               <h2 className="learning-hub-heading mb-2 text-center tracking-tight">
                 Hello, Welcome to Fab City
               </h2>
               <p className="text-gray-500 mb-10 text-center max-w-lg">
                 I can help you navigate the Fab City network, find labs, and understand the challenge.
               </p>
-              
+
               {/* Suggestions with "Hits" of Color via borders */}
               <div className="w-full max-w-2xl">
                 <h3 className="text-sm font-medium text-gray-600 mb-3">Suggested questions:</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {SUGGESTIONS.map((item, index) => (
-                  <button
-                    key={index}
-                    onClick={() => { setInputValue(item.text); setTimeout(() => handleSendMessage(item.text), 50); }}
-                    className={`group text-left p-0 bg-transparent border-0 shadow-none hover:underline transition-colors`}
-                    aria-label={`Suggestion: ${item.text}`}
-                  >
-                    <div className="flex justify-start items-center">
-                      <span className="text-sm font-medium text-gray-800 group-hover:text-black">{item.text}</span>
-                    </div>
-                  </button>
-                ))}
+                  {SUGGESTIONS.map((item, index) => (
+                    <button
+                      key={index}
+                      onClick={() => { setInputValue(item.text); setTimeout(() => handleSendMessage(item.text), 50); }}
+                      className={`group text-left p-0 bg-transparent border-0 shadow-none hover:underline transition-colors`}
+                      aria-label={`Suggestion: ${item.text}`}
+                    >
+                      <div className="flex justify-start items-center">
+                        <span className="text-sm font-medium text-gray-800 group-hover:text-black">{item.text}</span>
+                      </div>
+                    </button>
+                  ))}
                 </div>
               </div>
             </motion.div>
@@ -671,26 +672,26 @@ const apiUrl = 'https://fab-city-express-1.onrender.com';
             <>
               {messages.map((message, index) => (
                 <Message
-                    key={message.id}
-                    message={{
-                      ...message,
-                      onTypingComplete: handleTypingComplete,
-                    }}
-                    onLinkClick={handleLinkClick}
-                    handleCitationClick={handleCitationClick}
-                    onCopy={() => handleCopyMessage(message.text, message.id)}
-                    onDelete={() => handleDeleteMessage(message.id)}
-                    isCopied={copiedMessageId === message.id}
-                    isLast={index === messages.length - 1}
-                    onRegenerate={message.sender === 'ai' && index === messages.length - 1 ? handleRegenerate : undefined}
-                  />
+                  key={message.id}
+                  message={{
+                    ...message,
+                    onTypingComplete: handleTypingComplete,
+                  }}
+                  onLinkClick={handleLinkClick}
+                  handleCitationClick={handleCitationClick}
+                  onCopy={() => handleCopyMessage(message.text, message.id)}
+                  onDelete={() => handleDeleteMessage(message.id)}
+                  isCopied={copiedMessageId === message.id}
+                  isLast={index === messages.length - 1}
+                  onRegenerate={message.sender === 'ai' && index === messages.length - 1 ? handleRegenerate : undefined}
+                />
               ))}
               {isLoading && (
                 <div className="flex justify-center my-8">
                   <LoadingIndicator logoUrl={logoUrl} />
                 </div>
               )}
-              
+
               {/* Suggested Follow-up Questions */}
               {!isLoading && messages.length > 0 && messages[messages.length - 1]?.sender === 'ai' && (
                 <motion.div
@@ -722,7 +723,7 @@ const apiUrl = 'https://fab-city-express-1.onrender.com';
                   </div>
                 </motion.div>
               )}
-              
+
               <div ref={messagesEndRef} />
             </>
           )}
@@ -732,9 +733,9 @@ const apiUrl = 'https://fab-city-express-1.onrender.com';
       {/* Enhanced ERROR MESSAGE with Retry */}
       <AnimatePresence>
         {error && (
-          <motion.div 
-            initial={{ opacity: 0, y: -10 }} 
-            animate={{ opacity: 1, y: 0 }} 
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             className="bg-gradient-to-r from-red-500 to-red-600 text-white p-3 text-center text-sm font-medium shadow-lg"
           >
@@ -784,13 +785,13 @@ const apiUrl = 'https://fab-city-express-1.onrender.com';
                 placeholder="Ask me anything about Fab City..."
                 className="w-full bg-transparent text-black placeholder-gray-400 outline-none resize-none font-normal leading-6 text-base pr-2 chat-input-textarea"
                 rows="1"
-                style={{ 
+                style={{
                   minHeight: "24px",
                   maxHeight: "200px",
                 }}
               />
             </div>
-            
+
             {/* Send Button - Only appears when user starts typing, cream theme */}
             <AnimatePresence>
               {inputValue.trim() && (
@@ -802,7 +803,7 @@ const apiUrl = 'https://fab-city-express-1.onrender.com';
                   disabled={isLoading}
                   aria-label="Send message"
                   className="bg-[#FDFBF7] hover:bg-[#fbf9f5] active:bg-[#f5f3ef] text-black border border-gray-200 hover:border-gray-300 p-2.5 rounded-full transition-all duration-200 shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center touch-manipulation"
-                  style={{ 
+                  style={{
                     minWidth: isMobile ? '48px' : '40px',
                     minHeight: isMobile ? '48px' : '40px'
                   }}
@@ -813,7 +814,7 @@ const apiUrl = 'https://fab-city-express-1.onrender.com';
               )}
             </AnimatePresence>
           </div>
-          
+
           <div className="flex flex-col items-center mt-3 gap-2">
             <div className="flex items-center gap-1">
               <div className="h-1 w-1 bg-[#E6333A] rounded-full"></div>
@@ -828,8 +829,8 @@ const apiUrl = 'https://fab-city-express-1.onrender.com';
         </div>
       </div>
 
-        {previewUrl && <RichPreviewModal url={previewUrl} onClose={() => setPreviewUrl(null)} />}
-      </div>
+      {previewUrl && <RichPreviewModal url={previewUrl} onClose={() => setPreviewUrl(null)} />}
+    </div>
     // </LoadingProvider>
   );
 };
