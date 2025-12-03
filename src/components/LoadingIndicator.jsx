@@ -2,16 +2,6 @@ import { motion } from 'framer-motion';
 import { useState, useEffect } from 'react';
 
 const LoadingIndicator = ({ logoUrl }) => {
-  // Tailwind-first implementation with minimal inline styles for clip-path and calc-based sizing
-  const styleVars = {
-    '--hex-size': '28px',
-    '--gap': '2.4px',
-    '--hex-width': 'calc(28px * 0.866)',
-    '--hex-height': '28px',
-  };
-
-  const clip = 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)';
-
   // Sequence of short status steps (1s each) before switching to the "writing" phase
   const STEPS = [
     'Thinking...',
@@ -23,13 +13,6 @@ const LoadingIndicator = ({ logoUrl }) => {
   const [stepIndex, setStepIndex] = useState(0);
   const [writingPhase, setWritingPhase] = useState(false);
   const [dots, setDots] = useState(0);
-
-  // Transforms for the three outer hexagons (approx positions)
-  const outerTransforms = [
-    'rotate(30deg) translate(calc(var(--hex-width) + var(--gap))) rotate(-30deg)',
-    'rotate(150deg) translate(calc(var(--hex-width) + var(--gap))) rotate(-150deg)',
-    'rotate(270deg) translate(calc(var(--hex-width) + var(--gap))) rotate(-270deg)',
-  ];
 
   // Manage progression through steps and dot animation
   useEffect(() => {
@@ -56,65 +39,163 @@ const LoadingIndicator = ({ logoUrl }) => {
     return () => { if (dotTimer) clearInterval(dotTimer); };
   }, [writingPhase]);
 
-  return (
-    <div className="flex flex-col items-center justify-center">
-      <div className="relative flex items-center justify-center" style={styleVars}>
-        {/* Spinner ring */}
-        <div className="absolute inset-0 flex items-center justify-center animate-spin">
-          {outerTransforms.map((t, i) => (
-            <div
-              key={i}
-              className="absolute"
-              style={{
-                width: 'var(--hex-width)',
-                height: 'var(--hex-height)',
-                clipPath: clip,
-                transform: t,
-                backgroundColor: i === 0 ? '#151618ff' : i === 1 ? '#080808ff' : '#080808ff',
-                boxShadow: '0 0 8px rgba(255,255,255,0.06)',
-              }}
-            />
-          ))}
-        </div>
+  // Hexagon clip-path
+  const hexagonClip = 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)';
+  
+  // Three points positioned at 120-degree intervals (top, bottom-left, bottom-right)
+  const pointPositions = [
+    { angle: 0, color: '#E60122' },      // Red - Top
+    { angle: 120, color: '#4F7AE2' },    // Blue - Bottom Left
+    { angle: 240, color: '#00AA6C' }     // Green - Bottom Right
+  ];
+  
+  const radius = 36; // Distance from center
+  const pointSize = 12; // Size of each point
 
-        {/* Center hex — no white background, just 3D floating logo */}
-        <div
-          className="relative flex items-center justify-center"
+  return (
+    <div className="flex flex-col items-center justify-center py-8">
+      {/* Three Spinning Points with Center Logo - Fab City Style */}
+      <div className="relative flex items-center justify-center mb-4" style={{ width: '96px', height: '96px' }}>
+        {/* Rotating container for the three points */}
+        <motion.div
+          className="absolute"
           style={{
-            width: 'var(--hex-width)',
-            height: 'var(--hex-height)',
-            clipPath: clip,
-            filter: 'drop-shadow(0 8px 16px rgba(0,0,0,0.15)) drop-shadow(0 0 20px rgba(0,99,191,0.2))',
-            transform: 'perspective(1000px) rotateX(5deg) rotateY(5deg)',
+            width: '100%',
+            height: '100%',
+            left: 0,
+            top: 0
+          }}
+          animate={{
+            rotate: [0, 360, 360, 720]
+          }}
+          transition={{
+            duration: 3,
+            repeat: Infinity,
+            ease: "easeInOut",
+            times: [0, 0.5, 0.6, 1] // Spin for 50%, pause for 10%, spin again
           }}
         >
-          {logoUrl ? (
-            <img
-              src={logoUrl}
-              alt="Fab City Logo"
-              className="object-contain"
-              style={{ width: '68%', height: '68%' }}
-            />
-          ) : (
-            <div className="text-sm font-black leading-none text-black flex flex-col items-center">
-              <span>FAB</span>
-              <span>CITY</span>
-            </div>
-          )}
-        </div>
+          {/* Three points positioned around the circle */}
+          {pointPositions.map((point, index) => {
+            const x = Math.cos((point.angle * Math.PI) / 180) * radius;
+            const y = Math.sin((point.angle * Math.PI) / 180) * radius;
+            
+            return (
+              <motion.div
+                key={index}
+                className="absolute"
+                style={{
+                  width: `${pointSize}px`,
+                  height: `${pointSize}px`,
+                  left: `calc(50% + ${x}px - ${pointSize / 2}px)`,
+                  top: `calc(50% + ${y}px - ${pointSize / 2}px)`,
+                  clipPath: hexagonClip,
+                  background: point.color,
+                  boxShadow: `0 2px 8px ${point.color}40`
+                }}
+                animate={{
+                  scale: [1, 1.3, 1, 1.3, 1],
+                  opacity: [0.6, 1, 0.6, 1, 0.6]
+                }}
+                transition={{
+                  duration: 3,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                  times: [0, 0.3, 0.5, 0.8, 1],
+                  delay: index * 0.1
+                }}
+              />
+            );
+          })}
+        </motion.div>
+
+        {/* Center hexagon with logo */}
+        <motion.div
+          className="relative z-10 flex items-center justify-center"
+          style={{
+            width: '48px',
+            height: '48px',
+            clipPath: hexagonClip,
+            background: 'linear-gradient(135deg, #E60122 0%, #4F7AE2 50%, #00AA6C 100%)',
+            padding: '2px',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+          }}
+          animate={{
+            scale: [1, 1.05, 1],
+          }}
+          transition={{
+            duration: 2,
+            repeat: Infinity,
+            ease: "easeInOut"
+          }}
+        >
+          <div
+            className="flex items-center justify-center"
+            style={{
+              width: '100%',
+              height: '100%',
+              clipPath: hexagonClip,
+              background: '#FDFBF7'
+            }}
+          >
+            {logoUrl ? (
+              <img
+                src={logoUrl}
+                alt="Fab City Logo"
+                className="w-8 h-8 object-contain"
+              />
+            ) : (
+              <div
+                style={{
+                  width: '28px',
+                  height: '28px',
+                  clipPath: hexagonClip,
+                  background: 'linear-gradient(135deg, #E60122 0%, #4F7AE2 50%, #00AA6C 100%)'
+                }}
+              />
+            )}
+          </div>
+        </motion.div>
       </div>
 
-      {/* Status text: cycle through STEPS each 1s, then show Writing... with animated dots */}
-      <div className="mt-3 text-center text-xs text-gray-600">
-        {!writingPhase ? (
-          <span>{STEPS[stepIndex]}</span>
-        ) : (
-          <span>Writing answer{'.'.repeat(dots)}</span>
-        )}
-      </div>
+      {/* Status text with modern styling */}
+      <motion.div 
+        className="text-center"
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3 }}
+      >
+        <div className="text-sm font-medium text-gray-700 mb-1">
+          {!writingPhase ? (
+            <motion.span
+              key={stepIndex}
+              initial={{ opacity: 0, y: 5 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -5 }}
+              transition={{ duration: 0.3 }}
+            >
+              {STEPS[stepIndex]}
+            </motion.span>
+          ) : (
+            <span className="inline-flex items-center gap-1">
+              Writing answer
+              <motion.span
+                key={dots}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+              >
+                {'.'.repeat(dots)}
+              </motion.span>
+            </span>
+          )}
+        </div>
+        <div className="text-xs text-gray-500 mt-1">
+          Please wait...
+        </div>
+      </motion.div>
     </div>
   );
 };
 
-// Manage progression through steps and dot animation
 export default LoadingIndicator;

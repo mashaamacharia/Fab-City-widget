@@ -626,7 +626,7 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Download, Maximize2, Minimize2, ExternalLink, AlertCircle, Globe, FileText, FileImage, Film, Play } from 'lucide-react';
 import { useEffect, useState, useCallback, useRef } from 'react';
-import { useLoading } from '../context/loading';
+import { transformUrlForEmbedding } from '../utils/urlTransform';
 
 const RichPreviewModal = ({ url, onClose }) => {
   console.log(url)
@@ -668,6 +668,13 @@ const RichPreviewModal = ({ url, onClose }) => {
       }
       return 'googledrive';
     }
+    if (
+      targetUrl.includes('docs.google.com/document') ||
+      targetUrl.includes('docs.google.com/spreadsheets') ||
+      targetUrl.includes('docs.google.com/presentation')
+    ) {
+      return 'googledrive';
+    }
     if (targetUrl.includes('dropbox.com')) {
       if (urlLower.includes('.pdf') || urlLower.endsWith('.pdf')) return 'pdf';
       if (/\.(jpg|jpeg|png|gif|webp|svg)/i.test(urlLower)) return 'image';
@@ -684,6 +691,56 @@ const RichPreviewModal = ({ url, onClose }) => {
     return 'web';
   }, []);
 
+  // Process URL into embeddable format
+  const processUrl = useCallback((targetUrl, type) => {
+    switch (type) {
+      case 'youtube': {
+        let videoId = '';
+        if (targetUrl.includes('youtube.com/watch')) {
+          const urlParams = new URLSearchParams(targetUrl.split('?')[1]);
+          videoId = urlParams.get('v');
+        } else if (targetUrl.includes('youtu.be/')) {
+          videoId = targetUrl.split('youtu.be/')[1].split('?')[0].split('/')[0];
+        }
+        return videoId ? `https://www.youtube.com/embed/${videoId}?autoplay=0&rel=0` : targetUrl;
+      }
+      
+      case 'vimeo': {
+        const videoIdMatch = targetUrl.match(/vimeo\.com\/(\d+)/);
+        return videoIdMatch ? `https://player.vimeo.com/video/${videoIdMatch[1]}` : targetUrl;
+      }
+      
+      case 'googledrive': {
+        const transformed = transformUrlForEmbedding(targetUrl);
+        return transformed || targetUrl;
+      }
+      
+      case 'pdf': {
+        // Use Google Docs viewer for PDFs for better compatibility
+        if (!targetUrl.includes('drive.google.com') && !targetUrl.includes('docs.google.com/viewer')) {
+          return `https://docs.google.com/viewer?url=${encodeURIComponent(targetUrl)}&embedded=true`;
+        }
+        return targetUrl;
+      }
+      
+      case 'office': {
+        // Use Microsoft Office Online viewer for Office documents
+        return `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(targetUrl)}`;
+      }
+      
+      case 'dropbox': {
+        let processed = targetUrl.replace('www.dropbox.com', 'dl.dropboxusercontent.com');
+        processed = processed.replace('?dl=0', '').replace('?dl=1', '');
+        if (!processed.includes('dl=1') && !processed.includes('raw=1')) {
+          processed += (processed.includes('?') ? '&' : '?') + 'raw=1';
+        }
+        return processed;
+      }
+      
+      default:
+        return targetUrl;
+    }
+  }, []);
 
   // Handle PDF download
   const handleDownloadPDF = async (e) => {

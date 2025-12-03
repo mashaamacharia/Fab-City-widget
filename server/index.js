@@ -4,12 +4,12 @@ import express from 'express';
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-// Replace with your actual n8n webhook URL
+// Replace with your actual n8n webhook URL here
 const N8N_WEBHOOK_URL = process.env.N8N_WEBHOOK_URL || 'https://automations.manymangoes.com.au/webhook/6b51b51f-4928-48fd-b5fd-b39c34f523d1/chat';
 
 app.use(cors({
   origin: [
-    'http://localhost:5173',
+  // 'http://localhost:5173',  
     'https://www.fabcity.info',
     'https://fabcity.manymangoes.com.au',
   ],
