@@ -198,25 +198,34 @@ const ChatInterface = ({ isWidget = false, handleCitationClick }) => {
     const textToSend = (rawText || '').trim();
     if (!textToSend || isLoading) return;
 
-    const userMessage = { id: Date.now(), text: textToSend, sender: "user", timestamp: new Date() };
-    
-    // If regenerating, remove the last AI message
+    const timestamp = new Date();
+    let userMessage = null;
+
     if (isRegenerate) {
+      // Regenerate: do NOT add a duplicate user bubble, just remove the last AI response.
       setMessages((prev) => {
-        const filtered = prev.filter(msg => msg.sender !== 'ai' || msg.id !== prev[prev.length - 1]?.id);
-        return [...filtered, userMessage];
+        const updated = [...prev];
+        for (let i = updated.length - 1; i >= 0; i--) {
+          if (updated[i].sender === 'ai') {
+            updated.splice(i, 1);
+            break;
+          }
+        }
+        return updated;
       });
+      // Leave the existing user message as-is in the UI.
     } else {
+      userMessage = { id: Date.now(), text: textToSend, sender: "user", timestamp };
       setMessages((prev) => [...prev, userMessage]);
+      setInputValue("");
     }
-    
-    setInputValue("");
+
     setIsLoading(true);
     setError(null);
     setLastFailedMessage(null);
 
     try {
-      const requestBody = { message: userMessage.text, sessionId, domain, ...(location && { location }) };
+      const requestBody = { message: textToSend, sessionId, domain, ...(location && { location }) };
       const response = await fetch(`${apiUrl}/api/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -240,7 +249,8 @@ const ChatInterface = ({ isWidget = false, handleCitationClick }) => {
     } catch (err) {
       console.error(err);
       setError("Failed to get response. Please try again.");
-      setLastFailedMessage({ message: userMessage, error: err });
+      const failedUserMessage = userMessage || { id: Date.now(), text: textToSend, sender: "user", timestamp: new Date() };
+      setLastFailedMessage({ message: failedUserMessage, error: err });
       setMessages((prev) => [...prev, { id: Date.now() + 1, text: "⚠️ Sorry, I encountered an error.", sender: "ai", timestamp: new Date() }]);
     } finally {
       setIsLoading(false);

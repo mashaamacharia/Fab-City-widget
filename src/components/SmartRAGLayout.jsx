@@ -1,7 +1,6 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { X, ExternalLink, Maximize2, Minimize2 } from 'lucide-react';
 import { prefetchResource } from '../utils/resourcePrefetch';
-import { transformUrlForEmbedding } from '../utils/urlTransform';
 
 /**
  * SmartRAGLayout - Modern RAG Chat Interface with Smart Split-View Layout
@@ -218,15 +217,6 @@ const SmartRAGLayout = ({ renderChat }) => {
     // Prefetch resource immediately for faster loading
     prefetchResource(url);
 
-    // Transform URLs (Google Drive, Docs, Slides, etc.) into embeddable previews
-    const transformedUrl = transformUrlForEmbedding(url);
-    const isUrlTransformed = transformedUrl && transformedUrl !== url;
-
-    if (isUrlTransformed) {
-      // Prefetch transformed domain as well (e.g. drive.google.com preview endpoint)
-      prefetchResource(transformedUrl);
-    }
-
     // Check if this resource was previously loaded successfully
     const wasCached = loadedResourcesCache.current.has(url);
     
@@ -274,10 +264,9 @@ const SmartRAGLayout = ({ renderChat }) => {
         setIsLoading(false);
       }
     } else {
-      const baseUrl = isUrlTransformed ? transformedUrl : url;
-      // Only append text fragments when we're still using the original URL.
-      const fragment = !isUrlTransformed && citationText ? `#:~:text=${encodeURIComponent(citationText)}` : '';
-      const urlWithFragment = `${baseUrl}${fragment}`;
+      // append text fragment if citationText exists
+      const fragment = citationText ? `#:~:text=${encodeURIComponent(citationText)}` : '';
+      const urlWithFragment = `${url}${fragment}`;
       console.log('Regular URL, setting as iframe:', urlWithFragment);
       setResource({ 
         url: urlWithFragment, 
