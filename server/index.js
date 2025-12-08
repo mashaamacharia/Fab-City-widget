@@ -9,8 +9,8 @@ const N8N_WEBHOOK_URL = process.env.N8N_WEBHOOK_URL || 'https://automations.many
 
 app.use(cors({
   origin: [
-  // 'http://localhost:5173',  
-    'https://www.fabcity.info',
+  'http://localhost:5173',  
+    'https://fcity.manymangoes.com.au',
     'https://fabcity.manymangoes.com.au',
   ],
   methods: ['GET', 'POST', 'OPTIONS'],
@@ -205,9 +205,9 @@ app.post('/api/logs', express.json(), async (req, res) => {
 });
 
 
-app.get('/check-embed', async (req, res) => {
+app.get('/api/check-embed', async (req, res) => {
   const targetUrl = req.query.url;
-  const type = req.query.type;
+  const type = req.query.type || 'web';
   if (!targetUrl) {
     return res.status(400).json({ error: 'Missing url parameter' });
   }
@@ -224,22 +224,49 @@ app.get('/check-embed', async (req, res) => {
     const contentType = headers.get("content-type") || "";
     const contentLen = headers.get("content-length");
     const fileSize = contentLen ? parseInt(contentLen, 10) : null;
+    
+    // Check if URL is a PDF (by extension or content-type)
+    const isPdf = targetUrl.toLowerCase().endsWith('.pdf') || 
+                  contentType.toLowerCase().includes('application/pdf');
 
     // -------------------------
     // 2. Check iframe blocking
     // -------------------------
     let blocked = false;
-    const allowedTypes = ['googledrive', 'youtube']
-    const blockedByXFrame = xFrame && ["deny", "sameorigin"].includes(xFrame.toLowerCase());
-    const blockedByCSP = csp && csp.toLowerCase().includes("frame-ancestors");
-
-    if ((blockedByXFrame || blockedByCSP) && !allowedTypes.includes(type)) {
+    
+    // Check file size: > 25MB = blocked
+    const MAX_FILE_SIZE = 25 * 1024 * 1024; // 25MB
+    if (fileSize !== null && fileSize > MAX_FILE_SIZE) {
       blocked = true;
     }
-
-    // File size rule > 25MB
-    if ((type === 'pdf' || type === 'office') && fileSize && fileSize > 25 * 1024 * 1024) {
-      blocked = true;
+    
+    // CRUCIAL: PDFs should always be allowed (blocked: false) unless too large
+    if (!blocked && isPdf) {
+      blocked = false;
+    } else if (!blocked) {
+      // Check X-Frame-Options: DENY or SAMEORIGIN = blocked
+      const blockedByXFrame = xFrame && ["deny", "sameorigin"].includes(xFrame.toLowerCase().trim());
+      
+      // Check CSP frame-ancestors: if present and doesn't allow our domain, it's blocked
+      let blockedByCSP = false;
+      if (csp) {
+        const cspLower = csp.toLowerCase();
+        if (cspLower.includes("frame-ancestors")) {
+          // If frame-ancestors is 'none', it's blocked
+          if (cspLower.includes("frame-ancestors 'none'") || cspLower.includes('frame-ancestors "none"')) {
+            blockedByCSP = true;
+          }
+          // If frame-ancestors exists but doesn't explicitly allow our domain, consider it blocked
+          // (This is a conservative approach - we could refine this to check for specific domains)
+          else if (!cspLower.includes("frame-ancestors *") && !cspLower.includes("frame-ancestors 'self'")) {
+            // For now, if frame-ancestors is present with restrictions, mark as blocked
+            // unless it explicitly allows all origins
+            blockedByCSP = true;
+          }
+        }
+      }
+      
+      blocked = blockedByXFrame || blockedByCSP;
     }
 
     // -------------------------
@@ -340,10 +367,7 @@ app.get('/check-embed', async (req, res) => {
     // -------------------------
     return res.json({
       blocked,
-      type,
-      embedUrl,
-      fileSize,
-      contentType
+      originalUrl: targetUrl
     });
 
   } catch (err) {
