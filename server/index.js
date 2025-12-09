@@ -9,9 +9,7 @@ const N8N_WEBHOOK_URL = process.env.N8N_WEBHOOK_URL || 'https://automations.many
 
 app.use(cors({
   origin: [
-    'https://fcity.manymangoes.com.au',  
-    'https://fcity.manymangoes.com.au',
-    'https://fabcity.manymangoes.com.au',
+    'https://fcity.manymangoes.com.au'
   ],
   methods: ['GET', 'POST', 'OPTIONS'],
   credentials: true,

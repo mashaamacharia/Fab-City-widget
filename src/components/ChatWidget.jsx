@@ -18,7 +18,6 @@ const SUGGESTIONS = [
 ];
 
 const ChatInterface = ({ isWidget = false, handleCitationClick }) => {
-  // const apiUrl = 'http://localhost:3001';
 
   const apiUrl = 'https://mm-fabcitytest-back.onrender.com';  
   const logoUrl = "/fab-city-logo.svg";
