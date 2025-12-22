@@ -9,7 +9,9 @@ const N8N_WEBHOOK_URL = process.env.N8N_WEBHOOK_URL || 'https://automations.many
 
 app.use(cors({
   origin: [
-    'https://fcity.manymangoes.com.au'
+   'http://localhost:5173',  
+   'https://fcity.manymangoes.com.au',
+   'https://fabcity.manymangoes.com.au',
   ],
   methods: ['GET', 'POST', 'OPTIONS'],
   credentials: true,
@@ -101,7 +103,8 @@ app.get('/', (req, res) => {
       chat: 'POST /api/chat - Send a message to the AI assistant'
     },
     widget: {
-      url: 'https://fabcity-widget.onrender.com',
+      // url: 'https://fabcity-widget.onrender.com',
+      url: 'http://localhost:5173',
       script: 'https://fabcity-widget.onrender.com/fabcity-widget.js',
       css: 'https://fabcity-widget.onrender.com/fabcity-widget.css'
     },

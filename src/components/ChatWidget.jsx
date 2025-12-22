@@ -19,7 +19,8 @@ const SUGGESTIONS = [
 
 const ChatInterface = ({ isWidget = false, handleCitationClick }) => {
 
-  const apiUrl = 'https://mm-fabcitytest-back.onrender.com';  
+  // const apiUrl = 'https://mm-fabcitytest-back.onrender.com';  
+  const apiUrl =  'https://mm-fabcitytest-back.onrender.com'; 
   const logoUrl = "/fab-city-logo.svg";
 
   const [messages, setMessages] = useState([]);
