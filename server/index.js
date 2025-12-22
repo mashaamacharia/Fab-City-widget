@@ -105,6 +105,8 @@ app.get('/', (req, res) => {
     widget: {
       // url: 'https://fabcity-widget.onrender.com',
       url: 'http://localhost:5173',
+      // url: 'https://fabcity-widget.onrender.com',
+      url: 'http://localhost:5173',
       script: 'https://fabcity-widget.onrender.com/fabcity-widget.js',
       css: 'https://fabcity-widget.onrender.com/fabcity-widget.css'
     },
