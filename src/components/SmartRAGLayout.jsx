@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { X, ExternalLink, Maximize2, Minimize2 } from 'lucide-react';
 import { prefetchResource } from '../utils/resourcePrefetch';
-import { transformUrlForEmbedding } from '../utils/urlTransform';
+import { transformUrlForEmbedding, isPdf, isGoogleDrive } from '../utils/urlTransform';
 
 /**
  * SmartRAGLayout - Modern RAG Chat Interface with Smart Split-View Layout
@@ -93,8 +93,12 @@ const SmartRAGLayout = ({ renderChat }) => {
   const [isMobile, setIsMobile] = useState(false);
   const [iframeError, setIframeError] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isCheckingEmbed, setIsCheckingEmbed] = useState(false);
+  const [isBlocked, setIsBlocked] = useState(false);
+  const [popupOpened, setPopupOpened] = useState(false); // Track if popup was successfully opened
   const iframeLoadTimeoutRef = useRef(null);
   const iframeRef = useRef(null);
+  const popupWindowRef = useRef(null); // Reference to popup window
   const loadedResourcesCache = useRef(new Set()); // Cache of successfully loaded resources
 
   // Detect mobile viewport
@@ -205,8 +209,46 @@ const SmartRAGLayout = ({ renderChat }) => {
     }
   }, [resource.originalUrl, detectFileType]);
 
+  // Check embeddability via backend API
+  const checkEmbeddability = async (url) => {
+    try {
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+      const response = await fetch(`${apiUrl}/api/check-embed?url=${encodeURIComponent(url)}&type=web`);
+      if (!response.ok) {
+        console.warn('Embed check failed with status:', response.status);
+        return { blocked: false }; // Default to allowed if check fails
+      }
+      return await response.json();
+    } catch (e) {
+      console.error('Embed check failed:', e);
+      return { blocked: false }; // Default to allowed if check fails
+    }
+  };
+
+  // Open resource in popup window (side panel style)
+  const openInPopup = (urlToOpen) => {
+    const popupWidth = 600;
+    const popupHeight = window.screen.availHeight;
+    const popupLeft = window.screen.availWidth - popupWidth;
+    
+    const popup = window.open(
+      urlToOpen,
+      'fabcity-resource-sidepanel',
+      `width=${popupWidth},height=${popupHeight},left=${popupLeft},top=0,menubar=no,toolbar=no,location=yes,status=no,resizable=yes,scrollbars=yes`
+    );
+    
+    if (popup) {
+      popupWindowRef.current = popup;
+      setPopupOpened(true);
+      return popup;
+    }
+    
+    setPopupOpened(false);
+    return null;
+  };
+
   // Public handler to be used by chat to open citations
-  const handleCitationClick = useCallback((url, citationText = '') => {
+  const handleCitationClick = useCallback(async (url, citationText = '') => {
     if (!url) {
       console.warn('handleCitationClick called with empty URL');
       return;
@@ -214,6 +256,14 @@ const SmartRAGLayout = ({ renderChat }) => {
 
     console.log('handleCitationClick called with URL:', url, 'citationText:', citationText);
     const originalUrl = url;
+
+    // Reset states immediately - CRITICAL: Set viewerVisible FIRST
+    setViewerVisible(true);
+    setIsFullScreen(false);
+    setIframeError(false);
+    setIsBlocked(false);
+    setIsCheckingEmbed(true);
+    setIsLoading(false);
 
     // Prefetch resource immediately for faster loading
     prefetchResource(url);
@@ -226,18 +276,7 @@ const SmartRAGLayout = ({ renderChat }) => {
       prefetchResource(transformedUrl);
     }
 
-    // Check if this resource was previously loaded successfully
-    const wasCached = loadedResourcesCache.current.has(url);
-    
-    // Reset states immediately - CRITICAL: Set viewerVisible FIRST
-    setViewerVisible(true);
-    setIsFullScreen(false);
-    setIframeError(false);
-    
-    // Always show loading initially to give resources time to load
-    // Forms and complex resources need time to initialize
-    setIsLoading(true);
-
+    // Handle unsafe URLs
     if (isUnsafe(url)) {
       console.log('URL marked as unsafe, using fallback');
       setResource({ 
@@ -246,44 +285,89 @@ const SmartRAGLayout = ({ renderChat }) => {
         title: citationText || url,
         originalUrl 
       });
+      setIsCheckingEmbed(false);
       setIsLoading(false);
-    } else if (isYouTubeUrl(url)) {
-      const id = extractYouTubeId(url);
-      if (id) {
-        // Always convert YouTube URLs to embed format
-        const embedUrl = `https://www.youtube.com/embed/${id}?autoplay=1&rel=0`;
-        console.log('YouTube URL detected, converting to embed:', embedUrl);
-        setResource({ 
-          url: embedUrl, 
-          type: 'iframe', 
-          title: citationText || 'YouTube Video',
-          originalUrl 
-        });
-        // Prefetch YouTube embed domain
-        prefetchResource(embedUrl);
-      } else {
-        console.log('YouTube URL but could not extract ID, using fallback');
-        // If we can't extract ID, treat as fallback
-        setResource({ 
-          url, 
-          type: 'fallback', 
-          title: citationText || 'YouTube Video',
-          originalUrl 
-        });
-        setIsLoading(false);
-      }
-    } else {
+      return;
+    }
+
+    // Handle PDFs and Google Drive (always embeddable, skip check)
+    if (isPdf(url) || isGoogleDrive(url)) {
       const baseUrl = isUrlTransformed ? transformedUrl : url;
-      // Only append text fragments when pointing at the original document
+      // For PDFs, use Google Docs Viewer if not already transformed
+      let finalUrl = baseUrl;
+      if (isPdf(url) && !baseUrl.includes('docs.google.com/viewer')) {
+        finalUrl = `https://docs.google.com/viewer?url=${encodeURIComponent(url)}&embedded=true`;
+      }
+      
       const fragment = !isUrlTransformed && citationText ? `#:~:text=${encodeURIComponent(citationText)}` : '';
-      const urlWithFragment = `${baseUrl}${fragment}`;
-      console.log('Regular URL, setting as iframe:', urlWithFragment);
+      const urlWithFragment = `${finalUrl}${fragment}`;
+      console.log('PDF/Google Drive URL, setting as iframe:', urlWithFragment);
       setResource({ 
         url: urlWithFragment, 
         type: 'iframe', 
         title: citationText || url,
         originalUrl 
       });
+      setIsCheckingEmbed(false);
+      setIsLoading(true);
+      return;
+    }
+
+    // For all URLs (including YouTube), transform first, then check embeddability via API
+    // Transform URL immediately (YouTube watch URLs -> embed URLs, etc.)
+    const urlToCheck = isUrlTransformed ? transformedUrl : url;
+    
+    try {
+      const check = await checkEmbeddability(urlToCheck);
+      
+      if (check.blocked) {
+        // Resource is blocked (security, size, or YouTube restrictions) - automatically open in side panel popup
+        console.log('Resource is blocked from embedding, automatically opening in side panel popup');
+        setIsBlocked(true);
+        setPopupOpened(false); // Reset before opening
+        // Automatically open in side panel popup window (stays within chatbot context)
+        const popup = openInPopup(url);
+        // Always show fallback card (whether popup opened or not)
+        setResource({
+          url,
+          type: 'fallback',
+          title: citationText || url,
+          originalUrl
+        });
+        setIsCheckingEmbed(false);
+        setIsLoading(false);
+      } else {
+        // Resource is embeddable - render iframe with transformed URL
+        console.log('Resource is embeddable, rendering iframe');
+        setIsBlocked(false);
+        const baseUrl = isUrlTransformed ? transformedUrl : url;
+        // Only append text fragments when pointing at the original document
+        const fragment = !isUrlTransformed && citationText ? `#:~:text=${encodeURIComponent(citationText)}` : '';
+        const urlWithFragment = `${baseUrl}${fragment}`;
+        setResource({ 
+          url: urlWithFragment, 
+          type: 'iframe', 
+          title: citationText || url,
+          originalUrl 
+        });
+        setIsCheckingEmbed(false);
+        setIsLoading(true); // Start iframe loading
+      }
+    } catch (error) {
+      // On error, default to iframe (let browser handle it)
+      console.error('Error checking embeddability:', error);
+      setIsBlocked(false);
+      const baseUrl = isUrlTransformed ? transformedUrl : url;
+      const fragment = !isUrlTransformed && citationText ? `#:~:text=${encodeURIComponent(citationText)}` : '';
+      const urlWithFragment = `${baseUrl}${fragment}`;
+      setResource({ 
+        url: urlWithFragment, 
+        type: 'iframe', 
+        title: citationText || url,
+        originalUrl 
+      });
+      setIsCheckingEmbed(false);
+      setIsLoading(true);
     }
   }, []);
 
@@ -295,6 +379,18 @@ const SmartRAGLayout = ({ renderChat }) => {
     setViewerVisible(false);
     setIsFullScreen(false);
     setIframeError(false);
+    setPopupOpened(false);
+    
+    // Close popup window if open
+    if (popupWindowRef.current && !popupWindowRef.current.closed) {
+      try {
+        popupWindowRef.current.close();
+      } catch (e) {
+        console.warn('Could not close popup on viewer close:', e);
+      }
+      popupWindowRef.current = null;
+    }
+    
     // Clear resource after transition completes for smooth animation
     setTimeout(() => {
       setResource({ url: '', type: 'iframe', title: '', originalUrl: '' });
@@ -309,6 +405,20 @@ const SmartRAGLayout = ({ renderChat }) => {
     }
     setIframeError(true);
     setIsLoading(false);
+    setIsBlocked(true);
+    
+    // Automatically open in side panel popup when iframe fails (likely too large or blocked)
+    const urlToOpen = resource.originalUrl || resource.url;
+    if (urlToOpen) {
+      console.log('Iframe error detected, automatically opening in side panel popup');
+      setPopupOpened(false); // Reset before opening
+      const popup = openInPopup(urlToOpen);
+      if (!popup) {
+        // Popup blocked - will show fallback card below
+        console.warn('Popup was blocked by browser');
+      }
+    }
+    
     // Convert to fallback mode
     setResource(prev => ({
       ...prev,
@@ -505,8 +615,15 @@ const SmartRAGLayout = ({ renderChat }) => {
                 transition: 'all 0.3s ease'
               }}
             >
-              {/* Always render iframe immediately when URL is set - don't wait for loading state */}
-              {resource.type === 'iframe' && resource.url ? (
+              {/* Show loading spinner during embed check */}
+              {isCheckingEmbed ? (
+                <div className="absolute inset-0 flex items-center justify-center bg-white z-20">
+                  <div className="flex flex-col items-center gap-4">
+                    <div className="w-12 h-12 border-4 border-fabcity-blue border-t-transparent rounded-full animate-spin"></div>
+                    <div className="text-sm text-gray-600">Checking resource compatibility...</div>
+                  </div>
+                </div>
+              ) : resource.type === 'iframe' && resource.url ? (
                 <>
                   {/* Show loading overlay only when actually loading and no error */}
                   {isLoading && !iframeError && (
@@ -580,12 +697,14 @@ const SmartRAGLayout = ({ renderChat }) => {
                     </div>
                     <div className="flex-1">
                       <div className="text-xl font-semibold text-gray-900 mb-1">
-                        Unable to load resource
+                        {isBlocked ? 'Resource cannot be embedded' : 'Unable to load resource'}
                       </div>
                       <div className="text-sm text-gray-600">
-                        {iframeError 
-                          ? 'The resource failed to load. This may be due to connection issues, large file size, or security restrictions.'
-                          : 'The resource may be blocked, unsafe, or unsupported in the viewer. You can open it in a new tab instead.'}
+                        {isBlocked 
+                          ? 'This resource cannot be embedded (security restrictions, file size, or YouTube restrictions). It has been automatically opened in a side panel window that stays within the chatbot.'
+                          : iframeError 
+                            ? 'The resource failed to load and has been automatically opened in a side panel window. This may be due to connection issues, large file size, or security restrictions.'
+                            : 'The resource may be blocked, unsafe, or unsupported in the viewer. It has been automatically opened in a side panel window.'}
                       </div>
                     </div>
                   </div>
@@ -604,13 +723,38 @@ const SmartRAGLayout = ({ renderChat }) => {
                   </div>
 
                   <div className="flex flex-wrap gap-3 w-full">
-                    <button 
-                      className="px-4 py-2.5 bg-fabcity-blue text-white rounded-lg hover:bg-blue-700 transition-colors font-medium shadow-sm hover:shadow flex items-center gap-2"
-                      onClick={() => openExternal(resource.url)}
-                    >
-                      <ExternalLink size={16} />
-                      Open in new tab
-                    </button>
+                    {popupOpened ? (
+                      <button 
+                        className="px-4 py-2.5 bg-fabcity-blue text-white rounded-lg hover:bg-blue-700 transition-colors font-medium shadow-sm hover:shadow flex items-center gap-2"
+                        onClick={() => {
+                          // Re-open or focus existing popup
+                          const urlToOpen = resource.originalUrl || resource.url;
+                          if (popupWindowRef.current && !popupWindowRef.current.closed) {
+                            popupWindowRef.current.focus();
+                          } else {
+                            openInPopup(urlToOpen);
+                          }
+                        }}
+                      >
+                        <ExternalLink size={16} />
+                        Re-open Side Window
+                      </button>
+                    ) : (
+                      <button 
+                        className="px-4 py-2.5 bg-fabcity-blue text-white rounded-lg hover:bg-blue-700 transition-colors font-medium shadow-sm hover:shadow flex items-center gap-2"
+                        onClick={() => {
+                          const urlToOpen = resource.originalUrl || resource.url;
+                          const popup = openInPopup(urlToOpen);
+                          if (!popup) {
+                            // If popup was blocked, fallback to new tab
+                            window.open(urlToOpen, '_blank', 'noopener,noreferrer');
+                          }
+                        }}
+                      >
+                        <ExternalLink size={16} />
+                        Open in Side Window
+                      </button>
+                    )}
                     <button 
                       className="px-4 py-2.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium"
                       onClick={closeViewer}

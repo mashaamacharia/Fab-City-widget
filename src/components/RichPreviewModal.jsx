@@ -634,13 +634,13 @@ const RichPreviewModal = ({ url, onClose }) => {
   const [embedUrl, setEmbedUrl] = useState(url);
   const [isFullScreen, setIsFullScreen] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const iframeRef = useRef(null);
   const [blocked, setBlocked] = useState(false);   // tracks if embed is blocked by backend check
-  const { isLoading, setIsLoading } = useLoading()
 
 
 
-  const apiUrl = 'http://localhost:3001';
+  const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
   // const apiUrl = 'https://fab-city-express-1.onrender.com';
 
   // Detect file type from URL
@@ -861,25 +861,31 @@ const RichPreviewModal = ({ url, onClose }) => {
 
   const checkEmbedBlocked = async () => {
     try {
-      const resp = await fetch(`${apiUrl}/check-embed?url=${encodeURIComponent(url)}&type=${type}`);
+      const resp = await fetch(`${apiUrl}/api/check-embed?url=${encodeURIComponent(url)}&type=${type}`);
       if (!resp.ok) throw new Error('Failed to check embed status');
 
-      const { blocked, embedUrl } = await resp.json();
+      const { blocked, originalUrl } = await resp.json();
 
       if (canceled) return;
 
       setBlocked(blocked);
-      setEmbedUrl(embedUrl);
-
-      if (blocked) {
+      
+      // Process URL for embedding if not blocked
+      if (!blocked) {
+        const processed = processUrl(url, type);
+        setEmbedUrl(processed);
+      } else {
+        setEmbedUrl(originalUrl || url);
         console.log('Embed is blocked, opening popup...');
-        openInPopup(embedUrl);
-        console.log(popupRef.current);
+        openInPopup(originalUrl || url);
       }
     } catch (err) {
       if (canceled) return;
-      setBlocked(true);
-      setEmbedUrl(undefined);
+      console.error('Error checking embed status:', err);
+      // Default to not blocked if check fails
+      setBlocked(false);
+      const processed = processUrl(url, type);
+      setEmbedUrl(processed);
     } finally {
       if (!canceled) setIsLoading(false);
     }
