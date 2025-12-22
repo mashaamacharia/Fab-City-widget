@@ -18,9 +18,9 @@ const SUGGESTIONS = [
 ];
 
 const ChatInterface = ({ isWidget = false, handleCitationClick }) => {
-  const apiUrl = 'http://localhost:3001';
+  // const apiUrl = 'http://localhost:3001';
 
-// const apiUrl = 'https://fab-city-express-1.onrender.com';  
+  const apiUrl = 'https://fab-city-express-1.onrender.com';  
   const logoUrl = "/fab-city-logo.svg";
 
   const [messages, setMessages] = useState([]);
