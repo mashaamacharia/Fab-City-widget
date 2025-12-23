@@ -324,9 +324,9 @@ const SmartRAGLayout = ({ renderChat }) => {
         // Resource is blocked (security, size, or YouTube restrictions) - automatically open in side panel popup
         console.log('Resource is blocked from embedding, automatically opening in side panel popup');
         setIsBlocked(true);
-        setPopupOpened(false); // Reset before opening
+        // setPopupOpened(false); // Reset before opening
         // Automatically open in side panel popup window (stays within chatbot context)
-        const popup = openInPopup(url);
+        // const popup = openInPopup(url);
         // Always show fallback card (whether popup opened or not)
         setResource({
           url,
@@ -408,7 +408,7 @@ const SmartRAGLayout = ({ renderChat }) => {
     setIsBlocked(true);
     
     // Automatically open in side panel popup when iframe fails (likely too large or blocked)
-    const urlToOpen = resource.originalUrl || resource.url;
+    const urlToOpen = resource.url || resource.originalUrl;
     if (urlToOpen) {
       console.log('Iframe error detected, automatically opening in side panel popup');
       setPopupOpened(false); // Reset before opening
@@ -438,7 +438,7 @@ const SmartRAGLayout = ({ renderChat }) => {
     
     // Cache successfully loaded resource
     if (resource.url) {
-      loadedResourcesCache.current.add(resource.originalUrl || resource.url);
+      loadedResourcesCache.current.add(resource.url || resource.originalUrl);
     }
     
     // Give forms a bit more time to fully render after load event
@@ -701,7 +701,7 @@ const SmartRAGLayout = ({ renderChat }) => {
                       </div>
                       <div className="text-sm text-gray-600">
                         {isBlocked 
-                          ? 'This resource cannot be embedded (security restrictions, file size, or YouTube restrictions). It has been automatically opened in a side panel window that stays within the chatbot.'
+                          ? 'This resource cannot be embedded (security restrictions, file size, or YouTube restrictions).'
                           : iframeError 
                             ? 'The resource failed to load and has been automatically opened in a side panel window. This may be due to connection issues, large file size, or security restrictions.'
                             : 'The resource may be blocked, unsafe, or unsupported in the viewer. It has been automatically opened in a side panel window.'}
@@ -712,7 +712,7 @@ const SmartRAGLayout = ({ renderChat }) => {
                   <div className="w-full bg-gray-50 border border-gray-200 rounded-lg p-4">
                     <div className="text-xs font-medium text-gray-500 mb-1">Resource URL:</div>
                     <div className="text-sm font-mono text-gray-800 break-all">
-                      {resource.originalUrl || resource.url}
+                      {resource.url || resource.originalUrl}
                     </div>
                     {resource.title && resource.title !== resource.url && (
                       <>
@@ -737,13 +737,13 @@ const SmartRAGLayout = ({ renderChat }) => {
                         }}
                       >
                         <ExternalLink size={16} />
-                        Re-open Side Window
+                        Open Side Window
                       </button>
                     ) : (
                       <button 
                         className="px-4 py-2.5 bg-fabcity-blue text-white rounded-lg hover:bg-blue-700 transition-colors font-medium shadow-sm hover:shadow flex items-center gap-2"
                         onClick={() => {
-                          const urlToOpen = resource.originalUrl || resource.url;
+                          const urlToOpen = resource.url || resource.originalUrl;
                           const popup = openInPopup(urlToOpen);
                           if (!popup) {
                             // If popup was blocked, fallback to new tab

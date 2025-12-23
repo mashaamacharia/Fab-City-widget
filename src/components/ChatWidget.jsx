@@ -30,9 +30,6 @@ const ChatInterface = ({ isWidget = false, handleCitationClick }) => {
   const [previewUrl, setPreviewUrl] = useState(null);
   const [sessionId, setSessionId] = useState(null);
   const [domain, setDomain] = useState(null);
-  const [location, setLocation] = useState(null);
-  const [locationPermission, setLocationPermission] = useState("prompt");
-  const [showLocationBanner, setShowLocationBanner] = useState(true);
   const [conversations, setConversations] = useState([]);
   const [showHistory, setShowHistory] = useState(false);
   const [copiedMessageId, setCopiedMessageId] = useState(null);
@@ -46,6 +43,56 @@ const ChatInterface = ({ isWidget = false, handleCitationClick }) => {
   const messagesContainerRef = useRef(null);
   const pullStartRef = useRef({ y: 0, scrollTop: 0 });
   const [refresh, setRefresh] = useState(false)
+  const [location, setLocation] = useState(null);
+  const [locationPermission, setLocationPermission] = useState("prompt");
+  const [showLocationBanner, setShowLocationBanner] = useState(true);
+
+
+  const requestLocation = () => {
+    if (!navigator.geolocation) {
+      setLocationPermission("denied");
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setLocation({
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude,
+          accuracy: position.coords.accuracy,
+        });
+        setLocationPermission("granted");
+        setShowLocationBanner(false);
+      },
+      (err) => {
+        setLocationPermission("denied");
+        setShowLocationBanner(false);
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 300000 }
+    );
+
+  };
+
+  useEffect(() => {
+    const newSessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    setSessionId(newSessionId);
+    setDomain(window.location.hostname);
+    requestLocation();
+  }, []);
+
+  const requestPermissions = () => {
+    const popup = window.open(
+      "https://www.google.com",
+      "_blank",
+      "noopener,noreferrer"
+    );
+
+    if (!popup) {
+      alert("Please allow pop-ups for this site.");
+    } else {
+      setTimeout(() => popup.close(), 1500);
+    }
+  };
+
 
   // Load conversations from localStorage
   // Load conversations from localStorage (ONCE)
@@ -100,13 +147,6 @@ const ChatInterface = ({ isWidget = false, handleCitationClick }) => {
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  useEffect(() => {
-    const newSessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    setSessionId(newSessionId);
-    setDomain(window.location.hostname);
-    requestLocation();
-  }, []);
-
   // Save messages to localStorage whenever they change
   useEffect(() => {
     if (messages.length > 0) {
@@ -115,28 +155,7 @@ const ChatInterface = ({ isWidget = false, handleCitationClick }) => {
     }
   }, [messages, sessionId]);
 
-  const requestLocation = () => {
-    if (!navigator.geolocation) {
-      setLocationPermission("denied");
-      return;
-    }
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        setLocation({
-          latitude: position.coords.latitude,
-          longitude: position.coords.longitude,
-          accuracy: position.coords.accuracy,
-        });
-        setLocationPermission("granted");
-        setShowLocationBanner(false);
-      },
-      (err) => {
-        setLocationPermission("denied");
-        setShowLocationBanner(false);
-      },
-      { enableHighAccuracy: true, timeout: 10000, maximumAge: 300000 }
-    );
-  };
+
 
   useEffect(() => {
     if (showLocationBanner && locationPermission === "prompt") {
