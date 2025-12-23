@@ -212,7 +212,7 @@ const SmartRAGLayout = ({ renderChat }) => {
   // Check embeddability via backend API
   const checkEmbeddability = async (url) => {
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+      const apiUrl = 'https://fab-city-express-1.onrender.com';
       const response = await fetch(`${apiUrl}/api/check-embed?url=${encodeURIComponent(url)}&type=web`);
       if (!response.ok) {
         console.warn('Embed check failed with status:', response.status);

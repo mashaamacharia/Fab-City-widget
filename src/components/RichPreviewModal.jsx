@@ -640,8 +640,8 @@ const RichPreviewModal = ({ url, onClose }) => {
 
 
 
-  const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
-  // const apiUrl = 'https://fab-city-express-1.onrender.com';
+  // const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+  const apiUrl = 'https://fab-city-express-1.onrender.com';
 
   // Detect file type from URL
   const detectFileType = useCallback((targetUrl) => {
